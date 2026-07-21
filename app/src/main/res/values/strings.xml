@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">Nimio</string>
+    <string name="nav_status">Status</string>
+    <string name="nav_connections">Connections</string>
+    <string name="nav_profile">Profile</string>
+
+    <string name="status_screen_title">Your Availability</string>
+    <string name="status_screen_description">Share what you are doing and when it is a good time to connect.</string>
+
+    <string name="connections_screen_title">Connections</string>
+    <string name="connections_screen_description">Your trusted circle and visibility preferences will appear here.</string>
+
+    <string name="profile_screen_title">Profile</string>
+    <string name="profile_screen_description">Account settings and communication preferences will be managed here.</string>
 </resources>
