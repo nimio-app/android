@@ -1,15 +1,35 @@
 <resources>
     <string name="app_name">Nimio</string>
     <string name="nav_status">Status</string>
-    <string name="nav_connections">Connections</string>
-    <string name="nav_profile">Profile</string>
+    <string name="nav_social">Social</string>
+    <string name="nav_account">Account</string>
 
     <string name="status_screen_title">Your Availability</string>
     <string name="status_screen_description">Share what you are doing and when it is a good time to connect.</string>
+    <string name="status_activity_label">Current activity</string>
+    <string name="status_activity_placeholder">Deep work, lunch, commuting, etc.</string>
+    <string name="status_save_button">Save local status</string>
+    <string name="status_last_updated">Last updated: %1$s</string>
 
-    <string name="connections_screen_title">Connections</string>
-    <string name="connections_screen_description">Your trusted circle and visibility preferences will appear here.</string>
+    <string name="availability_available">Available</string>
+    <string name="availability_busy">Busy</string>
+    <string name="availability_focusing">Focusing</string>
+    <string name="availability_away">Away</string>
 
-    <string name="profile_screen_title">Profile</string>
-    <string name="profile_screen_description">Account settings and communication preferences will be managed here.</string>
+    <string name="social_screen_title">Social Graph</string>
+    <string name="social_screen_description">Connections, circles, and visibility rules will be managed here.</string>
+
+    <string name="account_screen_title">Account</string>
+    <string name="account_screen_description">Sign-in, profile identity, and account preferences will be managed here.</string>
+    <string name="account_identity_title">Identity</string>
+    <string name="account_identity_description">Display name, avatar, and pronouns placeholders for upcoming account flow.</string>
+    <string name="account_auth_title">Authentication</string>
+    <string name="account_auth_description">Email and OAuth providers will be introduced once backend contracts are ready.</string>
+
+    <string name="social_circles_title">Circles</string>
+    <string name="social_circles_description">Friends, teammates, and family groups will define who sees each status.</string>
+    <string name="social_requests_title">Connection Requests</string>
+    <string name="social_requests_description">Pending invites and approvals will appear here once account sync is enabled.</string>
+
+    <string name="sync_status_pending">Sync coming soon</string>
 </resources>

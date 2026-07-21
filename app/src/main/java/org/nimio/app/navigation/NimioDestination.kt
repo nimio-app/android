@@ -21,22 +21,22 @@ data object StatusDestination : NimioDestination {
     override val icon: ImageVector = Icons.Outlined.Schedule
 }
 
-data object ConnectionsDestination : NimioDestination {
-    override val route: String = "connections"
-    override val labelResId: Int = R.string.nav_connections
+data object SocialDestination : NimioDestination {
+    override val route: String = "social"
+    override val labelResId: Int = R.string.nav_social
     override val icon: ImageVector = Icons.Outlined.Groups
 }
 
-data object ProfileDestination : NimioDestination {
-    override val route: String = "profile"
-    override val labelResId: Int = R.string.nav_profile
+data object AccountDestination : NimioDestination {
+    override val route: String = "account"
+    override val labelResId: Int = R.string.nav_account
     override val icon: ImageVector = Icons.Outlined.AccountCircle
 }
 
 val topLevelDestinations: List<NimioDestination> = listOf(
     StatusDestination,
-    ConnectionsDestination,
-    ProfileDestination
+    SocialDestination,
+    AccountDestination
 )
 
 

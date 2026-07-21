@@ -18,8 +18,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import org.nimio.app.R
-import org.nimio.app.feature.connections.ui.ConnectionsScreen
-import org.nimio.app.feature.profile.ui.ProfileScreen
+import org.nimio.app.feature.account.ui.AccountScreen
+import org.nimio.app.feature.social.ui.SocialGraphScreen
 import org.nimio.app.feature.status.ui.StatusScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,11 +66,11 @@ fun NimioNavHost() {
             composable(route = StatusDestination.route) {
                 StatusScreen()
             }
-            composable(route = ConnectionsDestination.route) {
-                ConnectionsScreen()
+            composable(route = SocialDestination.route) {
+                SocialGraphScreen()
             }
-            composable(route = ProfileDestination.route) {
-                ProfileScreen()
+            composable(route = AccountDestination.route) {
+                AccountScreen()
             }
         }
     }
