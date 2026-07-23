@@ -8,7 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -28,11 +29,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import org.nimio.app.R
+import org.nimio.app.core.ui.NimioSectionCard
+import org.nimio.app.core.ui.NimioSectionHeader
 import org.nimio.app.feature.status.data.DefaultStatusRepository
 import org.nimio.app.feature.status.data.StatusPreferencesDataSource
 import org.nimio.app.feature.status.domain.Availability
@@ -61,45 +66,50 @@ fun StatusScreen() {
         // Current state summary header
         CurrentStatusSummary(uiState = uiState)
 
-        // Availability state picker grid
-        Text(
-            text = "How are you right now?",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
-        )
-        AvailabilityStateGrid(
-            selected = uiState.selectedAvailability,
-            onSelected = viewModel::onAvailabilitySelected
-        )
+        NimioSectionCard {
+            NimioSectionHeader(
+                title = stringResource(id = R.string.status_section_feeling_title),
+                description = stringResource(id = R.string.status_section_feeling_description)
+            )
+            AvailabilityStateGrid(
+                selected = uiState.selectedAvailability,
+                onSelected = viewModel::onAvailabilitySelected
+            )
+        }
 
-        // Note to loved ones
-        OutlinedTextField(
-            value = uiState.noteText,
-            onValueChange = viewModel::onNoteChanged,
-            label = { Text("Add a note for loved ones") },
-            placeholder = { Text("e.g. Deep in a project, back around 5pm ❤️") },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            minLines = 2,
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
-        )
+        NimioSectionCard {
+            NimioSectionHeader(
+                title = stringResource(id = R.string.status_note_label)
+            )
+            OutlinedTextField(
+                value = uiState.noteText,
+                onValueChange = viewModel::onNoteChanged,
+                label = { Text(stringResource(id = R.string.status_note_label)) },
+                placeholder = { Text(stringResource(id = R.string.status_note_placeholder)) },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                minLines = 2,
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
+            )
+        }
 
-        // Expiry picker
-        Text(
-            text = "Status expires",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
-        )
-        ExpirySelector(
-            selected = uiState.selectedExpiry,
-            onSelected = viewModel::onExpirySelected
-        )
+        NimioSectionCard {
+            NimioSectionHeader(
+                title = stringResource(id = R.string.status_expiry_title),
+                description = stringResource(id = R.string.status_expiry_description)
+            )
+            ExpirySelector(
+                selected = uiState.selectedExpiry,
+                onSelected = viewModel::onExpirySelected
+            )
+        }
 
-        // Save button
         ElevatedButton(
             onClick = viewModel::saveStatus,
             enabled = !uiState.isSaving,
-            modifier = Modifier.fillMaxWidth().height(52.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
             shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.elevatedButtonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
@@ -107,7 +117,11 @@ fun StatusScreen() {
             )
         ) {
             Text(
-                text = if (uiState.justSaved) "✓ Saved!" else "Update my status",
+                text = if (uiState.justSaved) {
+                    stringResource(id = R.string.status_saved)
+                } else {
+                    stringResource(id = R.string.status_save_button)
+                },
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold
             )
@@ -238,13 +252,11 @@ private fun ExpirySelector(
     selected: StatusExpiry,
     onSelected: (StatusExpiry) -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState()),
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        StatusExpiry.entries.forEach { expiry ->
+        items(StatusExpiry.entries) { expiry ->
             FilterChip(
                 selected = expiry == selected,
                 onClick = { onSelected(expiry) },

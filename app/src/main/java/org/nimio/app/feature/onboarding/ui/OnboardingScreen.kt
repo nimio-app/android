@@ -2,6 +2,8 @@ package org.nimio.app.feature.onboarding.ui
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import android.app.Activity
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,11 +28,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -38,19 +42,85 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import com.yalantis.ucrop.UCrop
 import org.nimio.app.R
+import kotlinx.coroutines.launch
+import org.nimio.app.core.common.createSquareCropIntent
+import org.nimio.app.core.common.importCroppedAvatar
+import org.nimio.app.core.common.removeAvatarUri
+import org.nimio.app.core.common.persistReadPermission
+import org.nimio.app.core.common.releaseReadPermission
+import org.nimio.app.core.ui.ProfileAvatar
 
 @Composable
 fun OnboardingScreen(
     onContinue: (displayName: String, bio: String, avatarUri: String?) -> Unit
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     var name by remember { mutableStateOf("") }
     var bio by remember { mutableStateOf("") }
     var avatarUri by remember { mutableStateOf<String?>(null) }
+    var pendingSourceUri by remember { mutableStateOf<Uri?>(null) }
+    var isPhotoProcessing by remember { mutableStateOf(false) }
     val trimmedName = name.trim()
-    val pickImage = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        avatarUri = uri?.toString()
+
+    val cropImage = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val sourceUri = pendingSourceUri
+        pendingSourceUri = null
+
+        coroutineScope.launch {
+            try {
+                val oldAvatar = avatarUri
+                val importedAvatar = when {
+                    result.resultCode == Activity.RESULT_OK -> {
+                        val croppedUri = result.data?.let(UCrop::getOutput)
+                        if (croppedUri != null) importCroppedAvatar(context, croppedUri) else null
+                    }
+                    sourceUri != null -> importCroppedAvatar(context, sourceUri)
+                    else -> null
+                }
+
+                if (importedAvatar != null) {
+                    removeAvatarUri(context, oldAvatar)
+                    avatarUri = importedAvatar
+                }
+            } finally {
+                if (sourceUri != null) {
+                    releaseReadPermission(context, sourceUri.toString())
+                }
+                isPhotoProcessing = false
+            }
+        }
+    }
+
+    val pickImage = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            persistReadPermission(context, uri)
+            pendingSourceUri = uri
+            isPhotoProcessing = true
+
+            val launched = runCatching {
+                cropImage.launch(createSquareCropIntent(context, uri))
+            }.isSuccess
+
+            if (!launched) {
+                coroutineScope.launch {
+                    try {
+                        val oldAvatar = avatarUri
+                        val importedAvatar = importCroppedAvatar(context, uri)
+                        if (importedAvatar != null) {
+                            removeAvatarUri(context, oldAvatar)
+                            avatarUri = importedAvatar
+                        }
+                    } finally {
+                        releaseReadPermission(context, uri.toString())
+                        pendingSourceUri = null
+                        isPhotoProcessing = false
+                    }
+                }
+            }
+        }
     }
 
     Box(
@@ -111,8 +181,13 @@ fun OnboardingScreen(
 
                     AvatarPickerRow(
                         avatarUri = avatarUri,
-                        onPick = { pickImage.launch("image/*") },
-                        onRemove = { avatarUri = null }
+                        fallbackName = trimmedName,
+                        isPhotoProcessing = isPhotoProcessing,
+                        onPick = { pickImage.launch(arrayOf("image/*")) },
+                        onRemove = {
+                            removeAvatarUri(context, avatarUri)
+                            avatarUri = null
+                        }
                     )
 
                     ProfilePreviewCard(
@@ -122,7 +197,7 @@ fun OnboardingScreen(
 
                     Button(
                         onClick = { onContinue(name, bio, avatarUri) },
-                        enabled = trimmedName.isNotEmpty(),
+                        enabled = trimmedName.isNotEmpty() && !isPhotoProcessing,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
@@ -202,6 +277,8 @@ private fun ProfilePreviewCard(
 @Composable
 private fun AvatarPickerRow(
     avatarUri: String?,
+    fallbackName: String,
+    isPhotoProcessing: Boolean,
     onPick: () -> Unit,
     onRemove: () -> Unit
 ) {
@@ -210,32 +287,22 @@ private fun AvatarPickerRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        if (avatarUri != null) {
-            AsyncImage(
-                model = avatarUri,
-                contentDescription = stringResource(id = R.string.account_avatar_content_description),
-                modifier = Modifier
-                    .size(54.dp)
-                    .clip(RoundedCornerShape(14.dp)),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            Image(
-                painter = painterResource(id = R.drawable.nimio_logo),
-                contentDescription = stringResource(id = R.string.nimio_logo_content_description),
-                modifier = Modifier
-                    .size(54.dp)
-                    .clip(RoundedCornerShape(14.dp)),
-                contentScale = ContentScale.Crop
-            )
-        }
+        ProfileAvatar(
+            avatarUri = avatarUri,
+            fallbackName = fallbackName,
+            size = 54.dp,
+            cornerRadius = 14.dp
+        )
 
         Button(
             onClick = onPick,
+            enabled = !isPhotoProcessing,
             shape = RoundedCornerShape(12.dp)
         ) {
             Text(
-                text = if (avatarUri == null) {
+                text = if (isPhotoProcessing) {
+                    stringResource(id = R.string.photo_processing)
+                } else if (avatarUri == null) {
                     stringResource(id = R.string.onboarding_pick_photo)
                 } else {
                     stringResource(id = R.string.onboarding_change_photo)
@@ -243,7 +310,7 @@ private fun AvatarPickerRow(
             )
         }
 
-        if (avatarUri != null) {
+        if (avatarUri != null && !isPhotoProcessing) {
             Text(
                 text = stringResource(id = R.string.onboarding_remove_photo),
                 style = MaterialTheme.typography.labelLarge,

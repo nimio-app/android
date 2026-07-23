@@ -8,6 +8,13 @@
 
     <string name="status_save_button">Update my status</string>
     <string name="status_last_updated">Last updated: %1$s</string>
+    <string name="status_section_feeling_title">How are you right now?</string>
+    <string name="status_section_feeling_description">Choose the feeling that best matches your social energy.</string>
+    <string name="status_note_label">Add a note for loved ones</string>
+    <string name="status_note_placeholder">Deep in a project, back around 5pm ❤️</string>
+    <string name="status_expiry_title">Status expires</string>
+    <string name="status_expiry_description">Let Nimio clear your status automatically when the moment passes.</string>
+    <string name="status_saved">✓ Saved!</string>
 
     <string name="availability_free">Free to chat</string>
     <string name="availability_focused">In deep focus</string>
@@ -29,6 +36,8 @@
     <string name="account_save_profile">Save profile</string>
     <string name="account_profile_saved">Profile saved</string>
     <string name="account_profile_intro">Set how your loved ones see you in Nimio.</string>
+    <string name="account_profile_preview_title">Your profile preview</string>
+    <string name="account_profile_preview_fallback_bio">Add a short note so people know when you are easiest to reach.</string>
 
     <string name="onboarding_title">Welcome to Nimio</string>
     <string name="onboarding_subtitle">Set up your profile so loved ones recognize you right away.</string>
@@ -38,6 +47,7 @@
     <string name="onboarding_pick_photo">Add photo</string>
     <string name="onboarding_change_photo">Change photo</string>
     <string name="onboarding_remove_photo">Remove</string>
+    <string name="photo_processing">Processing photo…</string>
     <string name="onboarding_preview_title">How this will look to loved ones</string>
     <string name="onboarding_preview_name_fallback">Your name appears here</string>
     <string name="onboarding_preview_bio_fallback">Add a short note so people know your rhythm.</string>

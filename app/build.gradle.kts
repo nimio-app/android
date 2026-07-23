@@ -40,6 +40,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
@@ -60,6 +61,7 @@ dependencies {
 
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.coil.compose)
+    implementation(libs.ucrop)
     implementation(libs.timber)
 
     implementation(platform(libs.androidx.compose.bom))
