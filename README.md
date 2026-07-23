@@ -18,6 +18,12 @@ Nimio gives people a lightweight way to communicate their current moment.
 - Feature-first package layout aligned with Clean Architecture + MVVM
 - Scaffolds for account, sync, and social graph layers
 
+## Implementation status (2026-07-23)
+
+- Status expiry UI/domain/persistence are in place.
+- Automatic expiry execution is not complete yet (`StatusExpiryWorker` is currently a no-op).
+- Connection workflows and backend sync are still in design/roadmap stage.
+
 ## Project structure
 
 - `app/src/main/java/org/nimio/app/core` shared primitives and platform services
@@ -42,7 +48,21 @@ cd /Users/lakky/Documents/GitHub/Nimio
 
 ## Next milestones
 
-1. Add Hilt wiring and replace manual `DefaultAppContainer` construction.
-2. Introduce Room-backed entities/DAO for richer status history.
-3. Add account API contracts and sync workers.
+1. Complete local expiry execution (worker implementation + scheduling).
+2. Add Hilt wiring and replace manual dependency construction.
+3. Introduce remote API contracts and sync workers for profile/social/status.
 4. Build social graph workflows (invites, circles, visibility rules).
+5. Introduce Room-backed status history and reconciliation.
+
+## Product and backend draft
+
+The full draft for status communication, connection lifecycle, and backend architecture is documented in:
+
+- `docs/BACKEND-ROADMAP.md`
+
+This includes:
+- how status should be communicated to authorized people,
+- how invites/connections should work,
+- a proposed API surface,
+- data model and sync strategy,
+- and a definition of done for the first real backend release.

@@ -45,3 +45,6 @@ When feature count and build times justify it, split into gradle modules:
 - `:core:*`
 - `:feature:*`
 
+## Related roadmap
+- `docs/BACKEND-ROADMAP.md` documents the planned backend contracts, status communication model, social connection lifecycle, and sync strategy.
+
