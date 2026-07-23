@@ -1,45 +1,47 @@
 package org.nimio.app.feature.status.ui
 
-import android.text.format.DateFormat
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.material3.Button
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import org.nimio.app.R
 import org.nimio.app.feature.status.data.DefaultStatusRepository
 import org.nimio.app.feature.status.data.StatusPreferencesDataSource
 import org.nimio.app.feature.status.domain.Availability
-import java.util.Date
+import org.nimio.app.feature.status.domain.StatusExpiry
 
 @Composable
 fun StatusScreen() {
     val context = LocalContext.current
-    val viewModelFactory = remember(context) {
+    val viewModelFactory = androidx.compose.runtime.remember(context) {
         StatusViewModelFactory(
             repository = DefaultStatusRepository(
                 dataSource = StatusPreferencesDataSource(context)
@@ -52,96 +54,189 @@ fun StatusScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Card(
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+        // Current state summary header
+        CurrentStatusSummary(uiState = uiState)
+
+        // Availability state picker grid
+        Text(
+            text = "How are you right now?",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+        AvailabilityStateGrid(
+            selected = uiState.selectedAvailability,
+            onSelected = viewModel::onAvailabilitySelected
+        )
+
+        // Note to loved ones
+        OutlinedTextField(
+            value = uiState.noteText,
+            onValueChange = viewModel::onNoteChanged,
+            label = { Text("Add a note for loved ones") },
+            placeholder = { Text("e.g. Deep in a project, back around 5pm ❤️") },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            minLines = 2,
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
+        )
+
+        // Expiry picker
+        Text(
+            text = "Status expires",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+        ExpirySelector(
+            selected = uiState.selectedExpiry,
+            onSelected = viewModel::onExpirySelected
+        )
+
+        // Save button
+        ElevatedButton(
+            onClick = viewModel::saveStatus,
+            enabled = !uiState.isSaving,
+            modifier = Modifier.fillMaxWidth().height(52.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.elevatedButtonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             )
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = stringResource(id = R.string.status_screen_title),
-                    style = MaterialTheme.typography.headlineSmall
-                )
-                Text(
-                    text = stringResource(id = R.string.status_screen_description),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
+            Text(
+                text = if (uiState.justSaved) "✓ Saved!" else "Update my status",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
+            )
         }
+    }
+}
 
-        Card(
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+@Composable
+private fun CurrentStatusSummary(uiState: StatusUiState) {
+    val current = uiState.selectedAvailability
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        colors = CardDefaults.cardColors(
+            containerColor = current.cardColor
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                AvailabilitySelector(
-                    selected = uiState.selectedAvailability,
-                    onSelected = viewModel::onAvailabilitySelected
-                )
-
-                OutlinedTextField(
-                    value = uiState.activityText,
-                    onValueChange = viewModel::onActivityChanged,
-                    label = { Text(text = stringResource(id = R.string.status_activity_label)) },
-                    placeholder = { Text(text = stringResource(id = R.string.status_activity_placeholder)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 2,
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.sync_status_pending),
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                    Button(
-                        onClick = viewModel::saveStatus,
-                        enabled = !uiState.isSaving
-                    ) {
-                        Text(text = stringResource(id = R.string.status_save_button))
-                    }
-                }
-            }
-        }
-
-        uiState.lastUpdatedEpochMillis?.let { timestamp ->
-            val formattedDate = remember(timestamp) {
-                DateFormat.getMediumDateFormat(context).format(Date(timestamp)) +
-                    " " +
-                    DateFormat.getTimeFormat(context).format(Date(timestamp))
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 4.dp)
-            ) {
+            Text(
+                text = current.emoji,
+                style = MaterialTheme.typography.displaySmall
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
-                    text = stringResource(id = R.string.status_last_updated, formattedDate),
-                    style = MaterialTheme.typography.labelLarge
+                    text = current.displayLabel,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
                 )
+                Text(
+                    text = current.hint,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+                )
+                if (uiState.noteText.isNotBlank()) {
+                    Text(
+                        text = "\"${uiState.noteText}\"",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun AvailabilitySelector(
+private fun AvailabilityStateGrid(
     selected: Availability,
     onSelected: (Availability) -> Unit
+) {
+    val states = Availability.entries
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        states.chunked(2).forEach { row ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                row.forEach { availability ->
+                    AvailabilityStateCard(
+                        availability = availability,
+                        isSelected = availability == selected,
+                        onClick = { onSelected(availability) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                // fill last row if odd count
+                if (row.size == 1) {
+                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AvailabilityStateCard(
+    availability: Availability,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val borderColor = if (isSelected)
+        MaterialTheme.colorScheme.primary
+    else
+        MaterialTheme.colorScheme.outlineVariant
+
+    Card(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(
+            width = if (isSelected) 2.dp else 1.dp,
+            color = borderColor
+        ),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) availability.cardColor else MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Text(text = availability.emoji, style = MaterialTheme.typography.titleLarge)
+            Text(
+                text = availability.displayLabel,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+            )
+            Text(
+                text = availability.hint,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                maxLines = 2
+            )
+        }
+    }
+}
+
+@Composable
+private fun ExpirySelector(
+    selected: StatusExpiry,
+    onSelected: (StatusExpiry) -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -149,11 +244,11 @@ private fun AvailabilitySelector(
             .horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Availability.entries.forEach { availability ->
+        StatusExpiry.entries.forEach { expiry ->
             FilterChip(
-                selected = availability == selected,
-                onClick = { onSelected(availability) },
-                label = { Text(text = stringResource(id = availability.labelResId)) }
+                selected = expiry == selected,
+                onClick = { onSelected(expiry) },
+                label = { Text(text = expiry.displayLabel) }
             )
         }
     }

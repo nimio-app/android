@@ -23,6 +23,8 @@ private object StatusPreferencesKeys {
     val availability = stringPreferencesKey("availability")
     val activity = stringPreferencesKey("activity")
     val updatedAt = longPreferencesKey("updated_at")
+    val note = stringPreferencesKey("note")
+    val expiresAt = longPreferencesKey("expires_at")
 }
 
 class StatusPreferencesDataSource(
@@ -44,9 +46,11 @@ class StatusPreferencesDataSource(
                 UserStatus(
                     availability = availabilityValue
                         ?.let { value -> runCatching { Availability.valueOf(value) }.getOrNull() }
-                        ?: Availability.AVAILABLE,
+                        ?: Availability.FREE,
                     activity = preferences[StatusPreferencesKeys.activity].orEmpty(),
-                    updatedAtEpochMillis = preferences[StatusPreferencesKeys.updatedAt]
+                    note = preferences[StatusPreferencesKeys.note].orEmpty(),
+                    updatedAtEpochMillis = preferences[StatusPreferencesKeys.updatedAt],
+                    expiresAtEpochMillis = preferences[StatusPreferencesKeys.expiresAt]
                 )
             }
     }
@@ -57,6 +61,12 @@ class StatusPreferencesDataSource(
             preferences[StatusPreferencesKeys.activity] = status.activity
             status.updatedAtEpochMillis?.let {
                 preferences[StatusPreferencesKeys.updatedAt] = it
+            }
+            preferences[StatusPreferencesKeys.note] = status.note
+            if (status.expiresAtEpochMillis != null) {
+                preferences[StatusPreferencesKeys.expiresAt] = status.expiresAtEpochMillis
+            } else {
+                preferences.remove(StatusPreferencesKeys.expiresAt)
             }
         }
     }

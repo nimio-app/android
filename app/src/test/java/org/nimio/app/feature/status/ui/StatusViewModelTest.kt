@@ -33,14 +33,14 @@ class StatusViewModelTest {
         val repository = FakeStatusRepository()
         val viewModel = StatusViewModel(repository = repository)
 
-        viewModel.onAvailabilitySelected(Availability.FOCUSING)
+        viewModel.onAvailabilitySelected(Availability.FOCUSED)
         viewModel.onActivityChanged("  heads down on architecture doc  ")
         viewModel.saveStatus()
 
         advanceUntilIdle()
 
         val savedStatus = repository.observeStatus().first()
-        assertEquals(Availability.FOCUSING, savedStatus.availability)
+        assertEquals(Availability.FOCUSED, savedStatus.availability)
         assertEquals("heads down on architecture doc", savedStatus.activity)
         assertTrue(savedStatus.updatedAtEpochMillis != null)
         assertFalse(viewModel.uiState.value.isSaving)

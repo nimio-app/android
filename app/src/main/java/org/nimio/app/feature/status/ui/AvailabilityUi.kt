@@ -1,15 +1,14 @@
 package org.nimio.app.feature.status.ui
 
-import androidx.annotation.StringRes
-import org.nimio.app.R
 import org.nimio.app.feature.status.domain.Availability
+import androidx.compose.ui.graphics.Color
 
-@get:StringRes
-val Availability.labelResId: Int
+val Availability.cardColor: Color
     get() = when (this) {
-        Availability.AVAILABLE -> R.string.availability_available
-        Availability.BUSY -> R.string.availability_busy
-        Availability.FOCUSING -> R.string.availability_focusing
-        Availability.AWAY -> R.string.availability_away
+        Availability.FREE -> Color(0xFFD6F5E3)
+        Availability.FOCUSED -> Color(0xFFE8E4FF)
+        Availability.AWAY -> Color(0xFFFFF1CC)
+        Availability.WANT_TO_CONNECT -> Color(0xFFFFE1ED)
+        Availability.RESTING -> Color(0xFFE8EAF6)
     }
 

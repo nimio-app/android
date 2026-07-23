@@ -6,17 +6,14 @@
     <string name="nav_social">Loved Ones</string>
     <string name="nav_account">Account</string>
 
-    <string name="status_screen_title">How You Are Right Now</string>
-    <string name="status_screen_description">Share your moment so loved ones know when to reach out.</string>
-    <string name="status_activity_label">Current activity</string>
-    <string name="status_activity_placeholder">Deep work, lunch, commuting, etc.</string>
-    <string name="status_save_button">Save status</string>
+    <string name="status_save_button">Update my status</string>
     <string name="status_last_updated">Last updated: %1$s</string>
 
-    <string name="availability_available">Available</string>
-    <string name="availability_busy">In a moment</string>
-    <string name="availability_focusing">Focused</string>
-    <string name="availability_away">Away</string>
+    <string name="availability_free">Free to chat</string>
+    <string name="availability_focused">In deep focus</string>
+    <string name="availability_away">Back soon</string>
+    <string name="availability_want_to_connect">Want to connect</string>
+    <string name="availability_resting">Taking a break</string>
 
     <string name="social_screen_title">Loved Ones</string>
     <string name="social_screen_description">Manage your close circle and who can see each status update.</string>
