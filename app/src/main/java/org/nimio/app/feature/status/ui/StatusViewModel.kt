@@ -12,9 +12,11 @@ import org.nimio.app.feature.status.domain.Availability
 import org.nimio.app.feature.status.domain.StatusExpiry
 import org.nimio.app.feature.status.domain.StatusRepository
 import org.nimio.app.feature.status.domain.UserStatus
+import org.nimio.app.feature.status.sync.StatusExpiryScheduler
 
 class StatusViewModel(
-    private val repository: StatusRepository
+    private val repository: StatusRepository,
+    private val expiryScheduler: StatusExpiryScheduler? = null
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(StatusUiState())
     val uiState: StateFlow<StatusUiState> = _uiState.asStateFlow()
@@ -81,6 +83,14 @@ class StatusViewModel(
                         expiresAtEpochMillis = expiresAt
                     )
                 )
+
+                if (expiresAt != null) {
+                    val delay = expiresAt - now
+                    if (delay > 0) expiryScheduler?.schedule(delay)
+                } else {
+                    expiryScheduler?.cancel()
+                }
+
                 _uiState.update { it.copy(justSaved = true) }
             } finally {
                 _uiState.update { it.copy(isSaving = false) }
@@ -90,14 +100,14 @@ class StatusViewModel(
 }
 
 class StatusViewModelFactory(
-    private val repository: StatusRepository
+    private val repository: StatusRepository,
+    private val expiryScheduler: StatusExpiryScheduler? = null
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return StatusViewModel(repository = repository) as T
+        return StatusViewModel(
+            repository = repository,
+            expiryScheduler = expiryScheduler
+        ) as T
     }
 }
-
-
-
-

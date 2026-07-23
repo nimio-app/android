@@ -42,6 +42,7 @@ import org.nimio.app.feature.status.data.DefaultStatusRepository
 import org.nimio.app.feature.status.data.StatusPreferencesDataSource
 import org.nimio.app.feature.status.domain.Availability
 import org.nimio.app.feature.status.domain.StatusExpiry
+import org.nimio.app.feature.status.sync.WorkManagerStatusExpiryScheduler
 
 @Composable
 fun StatusScreen() {
@@ -50,7 +51,8 @@ fun StatusScreen() {
         StatusViewModelFactory(
             repository = DefaultStatusRepository(
                 dataSource = StatusPreferencesDataSource(context)
-            )
+            ),
+            expiryScheduler = WorkManagerStatusExpiryScheduler(context)
         )
     }
     val viewModel: StatusViewModel = viewModel(factory = viewModelFactory)

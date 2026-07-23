@@ -5,18 +5,19 @@ Date: 2026-07-23
 ## 1) Current reality check
 
 ### Status expiry
-Status expiry is **partially implemented** today.
+Status expiry is **fully implemented** locally as of 2026-07-23.
 
 Implemented:
 - Expiry options in domain (`StatusExpiry`)
 - Expiry selection in UI (`StatusScreen`)
 - Expiry timestamp calculation on save (`StatusViewModel.saveStatus`)
 - Expiry timestamp persistence in DataStore (`StatusPreferencesDataSource`)
+- `StatusExpiryWorker` (CoroutineWorker) reads DataStore and clears expired status
+- Worker scheduled/cancelled from `StatusViewModel` via `StatusExpiryScheduler`
+- `WorkManagerStatusExpiryScheduler` wired in `StatusScreen`
+- Full unit test coverage for scheduling, cancellation, and persistence behaviour
 
-Not implemented yet:
-- Actual expiry execution/clearing job (`StatusExpiryWorker.doWork()` is a no-op)
-- Worker scheduling/canceling from save flow
-- Background-safe repository integration for the worker
+Note: server-side expiry enforcement is still pending and will be the source of truth once the backend is live.
 
 ## 2) Product model: how status should be communicated
 
@@ -128,10 +129,10 @@ Status:
 
 ## 7) Android implementation plan aligned to this draft
 
-### A. Complete local expiry first
-- Implement `StatusExpiryWorker` to clear expired local status.
-- Schedule/cancel worker from status save flow.
-- Add tests for expiry behavior and scheduling.
+### A. ~~Complete local expiry~~ ✅ Done (2026-07-23)
+- `StatusExpiryWorker` clears expired local status via DataStore.
+- Worker scheduled/cancelled from `StatusViewModel` after every save.
+- Full unit test coverage for scheduling, cancellation, and persistence.
 
 ### B. Add remote contracts
 - Add Retrofit interfaces + DTOs for auth/profile/social/status.

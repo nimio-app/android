@@ -1,22 +1,30 @@
 package org.nimio.app.feature.status.sync
 
 import android.content.Context
+import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import androidx.work.Worker
 import androidx.work.WorkerParameters
-import androidx.work.workDataOf
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.flow.first
+import org.nimio.app.feature.status.data.StatusPreferencesDataSource
+import org.nimio.app.feature.status.domain.UserStatus
 
 class StatusExpiryWorker(
     appContext: Context,
     workerParams: WorkerParameters
-) : Worker(appContext, workerParams) {
-    override fun doWork(): Result {
-        // When status expires, clear it by writing an empty default back to DataStore.
-        // We use a coroutine-safe approach by delegating to the repository on the calling thread.
-        // This is a no-op for now; full impl will use coroutine worker + repository injection.
+) : CoroutineWorker(appContext, workerParams) {
+
+    override suspend fun doWork(): Result {
+        val dataSource = StatusPreferencesDataSource(applicationContext)
+        val current = dataSource.observeStatus().first()
+        val expiresAt = current.expiresAtEpochMillis
+
+        if (expiresAt != null && System.currentTimeMillis() >= expiresAt) {
+            dataSource.saveStatus(UserStatus())
+        }
+
         return Result.success()
     }
 
@@ -36,4 +44,3 @@ class StatusExpiryWorker(
         }
     }
 }
-

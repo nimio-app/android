@@ -20,8 +20,7 @@ Nimio gives people a lightweight way to communicate their current moment.
 
 ## Implementation status (2026-07-23)
 
-- Status expiry UI/domain/persistence are in place.
-- Automatic expiry execution is not complete yet (`StatusExpiryWorker` is currently a no-op).
+- Status expiry is fully implemented: UI, domain, persistence, worker execution, and scheduling are all wired and tested.
 - Connection workflows and backend sync are still in design/roadmap stage.
 
 ## Project structure
@@ -48,7 +47,7 @@ cd /Users/lakky/Documents/GitHub/Nimio
 
 ## Next milestones
 
-1. Complete local expiry execution (worker implementation + scheduling).
+1. ~~Complete local expiry execution (worker implementation + scheduling).~~ ✅ Done
 2. Add Hilt wiring and replace manual dependency construction.
 3. Introduce remote API contracts and sync workers for profile/social/status.
 4. Build social graph workflows (invites, circles, visibility rules).
