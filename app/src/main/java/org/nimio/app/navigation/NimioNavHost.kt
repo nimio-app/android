@@ -32,13 +32,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import org.nimio.app.R
+import org.nimio.app.feature.account.domain.LocalProfileRepository
 import org.nimio.app.feature.account.ui.AccountScreen
 import org.nimio.app.feature.social.ui.SocialGraphScreen
 import org.nimio.app.feature.status.ui.StatusScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NimioNavHost() {
+fun NimioNavHost(
+    profileRepository: LocalProfileRepository
+) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
@@ -120,7 +123,7 @@ fun NimioNavHost() {
                 SocialGraphScreen()
             }
             composable(route = AccountDestination.route) {
-                AccountScreen()
+                AccountScreen(profileRepository = profileRepository)
             }
         }
     }

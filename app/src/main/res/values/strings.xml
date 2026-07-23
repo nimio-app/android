@@ -24,6 +24,20 @@
     <string name="account_identity_description">Display name, avatar, and pronouns placeholders for upcoming account flow.</string>
     <string name="account_auth_title">Authentication</string>
     <string name="account_auth_description">Email and OAuth providers will be introduced once backend contracts are ready.</string>
+    <string name="account_display_name_label">Display name</string>
+    <string name="account_bio_label">About you</string>
+    <string name="account_save_profile">Save profile</string>
+    <string name="account_profile_saved">Profile saved</string>
+    <string name="account_profile_intro">Set how your loved ones see you in Nimio.</string>
+
+    <string name="onboarding_title">Welcome to Nimio</string>
+    <string name="onboarding_subtitle">Set up your profile so loved ones recognize you right away.</string>
+    <string name="onboarding_cta">Continue to Nimio</string>
+    <string name="onboarding_name_placeholder">Your name</string>
+    <string name="onboarding_bio_placeholder">A short note, like "Usually free after 7pm"</string>
+    <string name="onboarding_preview_title">How this will look to loved ones</string>
+    <string name="onboarding_preview_name_fallback">Your name appears here</string>
+    <string name="onboarding_preview_bio_fallback">Add a short note so people know your rhythm.</string>
 
     <string name="social_circles_title">Circles</string>
     <string name="social_circles_description">Friends, teammates, and family groups will define who sees each status.</string>
