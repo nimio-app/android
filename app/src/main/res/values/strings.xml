@@ -1,23 +1,25 @@
 <resources>
     <string name="app_name">Nimio</string>
+    <string name="app_tagline">Stay in sync with the people you love.</string>
+    <string name="nimio_logo_content_description">Nimio logo</string>
     <string name="nav_status">Status</string>
-    <string name="nav_social">Social</string>
+    <string name="nav_social">Loved Ones</string>
     <string name="nav_account">Account</string>
 
-    <string name="status_screen_title">Your Availability</string>
-    <string name="status_screen_description">Share what you are doing and when it is a good time to connect.</string>
+    <string name="status_screen_title">How You Are Right Now</string>
+    <string name="status_screen_description">Share your moment so loved ones know when to reach out.</string>
     <string name="status_activity_label">Current activity</string>
     <string name="status_activity_placeholder">Deep work, lunch, commuting, etc.</string>
-    <string name="status_save_button">Save local status</string>
+    <string name="status_save_button">Save status</string>
     <string name="status_last_updated">Last updated: %1$s</string>
 
     <string name="availability_available">Available</string>
-    <string name="availability_busy">Busy</string>
-    <string name="availability_focusing">Focusing</string>
+    <string name="availability_busy">In a moment</string>
+    <string name="availability_focusing">Focused</string>
     <string name="availability_away">Away</string>
 
-    <string name="social_screen_title">Social Graph</string>
-    <string name="social_screen_description">Connections, circles, and visibility rules will be managed here.</string>
+    <string name="social_screen_title">Loved Ones</string>
+    <string name="social_screen_description">Manage your close circle and who can see each status update.</string>
 
     <string name="account_screen_title">Account</string>
     <string name="account_screen_description">Sign-in, profile identity, and account preferences will be managed here.</string>
@@ -31,5 +33,5 @@
     <string name="social_requests_title">Connection Requests</string>
     <string name="social_requests_description">Pending invites and approvals will appear here once account sync is enabled.</string>
 
-    <string name="sync_status_pending">Sync coming soon</string>
+    <string name="sync_status_pending">Cloud sync is on the way</string>
 </resources>

@@ -2,14 +2,13 @@ package org.nimio.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val NimioBlue = Color(0xFF2F6BFF)
-val NimioBlueDark = Color(0xFF9BB7FF)
-val NimioTeal = Color(0xFF2AA198)
+val NimioCrimson = Color(0xFFFF2768)
+val NimioCoral = Color(0xFFE51D5C)
+val NimioRose = Color(0xFF8B3659)
+val NimioCrimsonContainerLight = Color(0xFFFFE1ED)
 
-val SurfaceLight = Color(0xFFFCFCFF)
-val BackgroundLight = Color(0xFFF7F8FC)
-val OnSurfaceLight = Color(0xFF1A1C1E)
+val SurfaceLight = Color(0xFFFFFDFA)
+val BackgroundLight = Color(0xFFFFF8F4)
+val OnSurfaceLight = Color(0xFF2B1A20)
 
-val SurfaceDark = Color(0xFF111317)
-val BackgroundDark = Color(0xFF0B0E12)
-val OnSurfaceDark = Color(0xFFE3E2E6)
+val OutlineSoft = Color(0x255A2E3A)

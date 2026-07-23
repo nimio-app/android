@@ -2,6 +2,8 @@ package org.nimio.app.feature.status.ui
 
 import android.text.format.DateFormat
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,6 +13,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -51,44 +55,66 @@ fun StatusScreen() {
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = stringResource(id = R.string.status_screen_title),
-            style = MaterialTheme.typography.headlineSmall
-        )
-        Text(
-            text = stringResource(id = R.string.status_screen_description),
-            style = MaterialTheme.typography.bodyLarge
-        )
-
-        AvailabilitySelector(
-            selected = uiState.selectedAvailability,
-            onSelected = viewModel::onAvailabilitySelected
-        )
-
-        OutlinedTextField(
-            value = uiState.activityText,
-            onValueChange = viewModel::onActivityChanged,
-            label = { Text(text = stringResource(id = R.string.status_activity_label)) },
-            placeholder = { Text(text = stringResource(id = R.string.status_activity_placeholder)) },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 2,
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = stringResource(id = R.string.sync_status_pending),
-                style = MaterialTheme.typography.labelLarge
+        Card(
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
             )
-            Button(
-                onClick = viewModel::saveStatus,
-                enabled = !uiState.isSaving
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(text = stringResource(id = R.string.status_save_button))
+                Text(
+                    text = stringResource(id = R.string.status_screen_title),
+                    style = MaterialTheme.typography.headlineSmall
+                )
+                Text(
+                    text = stringResource(id = R.string.status_screen_description),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+
+        Card(
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                AvailabilitySelector(
+                    selected = uiState.selectedAvailability,
+                    onSelected = viewModel::onAvailabilitySelected
+                )
+
+                OutlinedTextField(
+                    value = uiState.activityText,
+                    onValueChange = viewModel::onActivityChanged,
+                    label = { Text(text = stringResource(id = R.string.status_activity_label)) },
+                    placeholder = { Text(text = stringResource(id = R.string.status_activity_placeholder)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 2,
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.sync_status_pending),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                    Button(
+                        onClick = viewModel::saveStatus,
+                        enabled = !uiState.isSaving
+                    ) {
+                        Text(text = stringResource(id = R.string.status_save_button))
+                    }
+                }
             }
         }
 
@@ -98,10 +124,16 @@ fun StatusScreen() {
                     " " +
                     DateFormat.getTimeFormat(context).format(Date(timestamp))
             }
-            Text(
-                text = stringResource(id = R.string.status_last_updated, formattedDate),
-                style = MaterialTheme.typography.labelLarge
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.status_last_updated, formattedDate),
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
         }
     }
 }
