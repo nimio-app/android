@@ -24,6 +24,7 @@ class AccountViewModel(
                     it.copy(
                         displayName = profile.displayName,
                         bio = profile.bio,
+                        avatarUri = profile.avatarUri,
                         isSaving = false,
                         saved = false
                     )
@@ -40,6 +41,10 @@ class AccountViewModel(
         _uiState.update { it.copy(bio = value, saved = false) }
     }
 
+    fun onAvatarChanged(avatarUri: String?) {
+        _uiState.update { it.copy(avatarUri = avatarUri, saved = false) }
+    }
+
     fun saveProfile() {
         val current = _uiState.value
         _uiState.update { it.copy(isSaving = true) }
@@ -48,6 +53,7 @@ class AccountViewModel(
                 LocalProfile(
                     displayName = current.displayName.trim(),
                     bio = current.bio.trim(),
+                    avatarUri = current.avatarUri,
                     onboardingCompleted = true
                 )
             )

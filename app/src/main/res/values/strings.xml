@@ -35,9 +35,13 @@
     <string name="onboarding_cta">Continue to Nimio</string>
     <string name="onboarding_name_placeholder">Your name</string>
     <string name="onboarding_bio_placeholder">A short note, like "Usually free after 7pm"</string>
+    <string name="onboarding_pick_photo">Add photo</string>
+    <string name="onboarding_change_photo">Change photo</string>
+    <string name="onboarding_remove_photo">Remove</string>
     <string name="onboarding_preview_title">How this will look to loved ones</string>
     <string name="onboarding_preview_name_fallback">Your name appears here</string>
     <string name="onboarding_preview_bio_fallback">Add a short note so people know your rhythm.</string>
+    <string name="account_avatar_content_description">Profile photo</string>
 
     <string name="social_circles_title">Circles</string>
     <string name="social_circles_description">Friends, teammates, and family groups will define who sees each status.</string>

@@ -55,6 +55,8 @@ class ProfilePreferencesDataSource(
             preferences[ProfilePreferencesKeys.bio] = profile.bio
             profile.avatarUri?.let {
                 preferences[ProfilePreferencesKeys.avatarUri] = it
+            } ?: run {
+                preferences.remove(ProfilePreferencesKeys.avatarUri)
             }
             preferences[ProfilePreferencesKeys.onboardingCompleted] = profile.onboardingCompleted
         }

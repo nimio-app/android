@@ -1,6 +1,9 @@
 package org.nimio.app.feature.onboarding.ui
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,15 +38,20 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import org.nimio.app.R
 
 @Composable
 fun OnboardingScreen(
-    onContinue: (displayName: String, bio: String) -> Unit
+    onContinue: (displayName: String, bio: String, avatarUri: String?) -> Unit
 ) {
     var name by remember { mutableStateOf("") }
     var bio by remember { mutableStateOf("") }
+    var avatarUri by remember { mutableStateOf<String?>(null) }
     val trimmedName = name.trim()
+    val pickImage = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        avatarUri = uri?.toString()
+    }
 
     Box(
         modifier = Modifier
@@ -101,13 +109,19 @@ fun OnboardingScreen(
                         shape = RoundedCornerShape(14.dp)
                     )
 
+                    AvatarPickerRow(
+                        avatarUri = avatarUri,
+                        onPick = { pickImage.launch("image/*") },
+                        onRemove = { avatarUri = null }
+                    )
+
                     ProfilePreviewCard(
                         previewName = if (trimmedName.isNotEmpty()) trimmedName else stringResource(id = R.string.onboarding_preview_name_fallback),
                         previewBio = bio.trim().ifEmpty { stringResource(id = R.string.onboarding_preview_bio_fallback) }
                     )
 
                     Button(
-                        onClick = { onContinue(name, bio) },
+                        onClick = { onContinue(name, bio, avatarUri) },
                         enabled = trimmedName.isNotEmpty(),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -181,6 +195,64 @@ private fun ProfilePreviewCard(
                     textAlign = TextAlign.Start
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun AvatarPickerRow(
+    avatarUri: String?,
+    onPick: () -> Unit,
+    onRemove: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        if (avatarUri != null) {
+            AsyncImage(
+                model = avatarUri,
+                contentDescription = stringResource(id = R.string.account_avatar_content_description),
+                modifier = Modifier
+                    .size(54.dp)
+                    .clip(RoundedCornerShape(14.dp)),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Image(
+                painter = painterResource(id = R.drawable.nimio_logo),
+                contentDescription = stringResource(id = R.string.nimio_logo_content_description),
+                modifier = Modifier
+                    .size(54.dp)
+                    .clip(RoundedCornerShape(14.dp)),
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        Button(
+            onClick = onPick,
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text(
+                text = if (avatarUri == null) {
+                    stringResource(id = R.string.onboarding_pick_photo)
+                } else {
+                    stringResource(id = R.string.onboarding_change_photo)
+                }
+            )
+        }
+
+        if (avatarUri != null) {
+            Text(
+                text = stringResource(id = R.string.onboarding_remove_photo),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .padding(2.dp)
+                    .clickable(onClick = onRemove)
+            )
         }
     }
 }

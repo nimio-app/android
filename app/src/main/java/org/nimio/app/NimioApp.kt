@@ -1,5 +1,6 @@
 package org.nimio.app
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,18 +39,24 @@ fun NimioApp() {
     }
 
     NimioTheme {
-        if (showSplash) {
-            NimioSplashScreen(startAnimation = startAnimation)
-        } else if (!profile.onboardingCompleted) {
-            OnboardingScreen(
-                onContinue = { displayName, bio ->
-                    coroutineScope.launch {
-                        profileRepository.completeOnboarding(displayName, bio)
+        val stage = when {
+            showSplash -> "splash"
+            !profile.onboardingCompleted -> "onboarding"
+            else -> "app"
+        }
+
+        Crossfade(targetState = stage, label = "appStage") { currentStage ->
+            when (currentStage) {
+                "splash" -> NimioSplashScreen(startAnimation = startAnimation)
+                "onboarding" -> OnboardingScreen(
+                    onContinue = { displayName, bio, avatarUri ->
+                        coroutineScope.launch {
+                            profileRepository.completeOnboarding(displayName, bio, avatarUri)
+                        }
                     }
-                }
-            )
-        } else {
-            NimioNavHost(profileRepository = profileRepository)
+                )
+                else -> NimioNavHost(profileRepository = profileRepository)
+            }
         }
     }
 }

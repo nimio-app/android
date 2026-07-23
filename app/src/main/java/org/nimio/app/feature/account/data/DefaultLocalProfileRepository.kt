@@ -14,11 +14,12 @@ class DefaultLocalProfileRepository(
         dataSource.saveProfile(profile)
     }
 
-    override suspend fun completeOnboarding(displayName: String, bio: String) {
+    override suspend fun completeOnboarding(displayName: String, bio: String, avatarUri: String?) {
         dataSource.saveProfile(
             LocalProfile(
                 displayName = displayName.trim(),
                 bio = bio.trim(),
+                avatarUri = avatarUri,
                 onboardingCompleted = true
             )
         )
