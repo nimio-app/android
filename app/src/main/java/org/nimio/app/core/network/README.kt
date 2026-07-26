@@ -1,7 +1,11 @@
 package org.nimio.app.core.network
 
 /**
- * Networking clients, API interfaces, and DTO serializers will live in this package.
+ * Networking primitives live in this package.
+ *
+ * Implemented:
+ * - Auth token DataStore (`AuthTokenDataSource`)
+ * - Request auth interceptor (`AuthInterceptor`)
  */
 object NetworkReadme
 
