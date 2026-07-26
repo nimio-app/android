@@ -13,8 +13,7 @@ import dagger.hilt.components.SingletonComponent
 import org.nimio.app.core.network.AuthInterceptor
 import org.nimio.app.feature.account.data.AccountApi
 
-private const val NIMIO_BASE_URL = "https://reshape-library-shuffle.ngrok-free.dev/"
-private const val NGROK_SKIP_BROWSER_WARNING_HEADER = "ngrok-skip-browser-warning"
+private const val NIMIO_BASE_URL = "https://api.nimio.org/"
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -32,12 +31,6 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
         return OkHttpClient.Builder()
-            .addInterceptor { chain ->
-                val request = chain.request().newBuilder()
-                    .header(NGROK_SKIP_BROWSER_WARNING_HEADER, "true")
-                    .build()
-                chain.proceed(request)
-            }
             .addInterceptor(authInterceptor)
             .build()
     }
