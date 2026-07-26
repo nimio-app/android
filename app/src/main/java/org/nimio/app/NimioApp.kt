@@ -6,30 +6,26 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import org.nimio.app.feature.account.data.DefaultLocalProfileRepository
-import org.nimio.app.feature.account.data.ProfilePreferencesDataSource
-import org.nimio.app.feature.onboarding.ui.OnboardingScreen
+import org.nimio.app.feature.account.domain.AccountRepository
+import org.nimio.app.feature.account.domain.AccountSession
+import org.nimio.app.feature.account.domain.LocalProfileRepository
+import org.nimio.app.feature.account.ui.AuthScreen
 import org.nimio.app.navigation.NimioNavHost
 import org.nimio.app.ui.splash.NimioSplashScreen
 import org.nimio.app.ui.theme.NimioTheme
 
 @Composable
-fun NimioApp() {
+fun NimioApp(
+    accountRepository: AccountRepository,
+    profileRepository: LocalProfileRepository
+) {
     var showSplash by remember { mutableStateOf(true) }
     var startAnimation by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-    val profileRepository = remember(context) {
-        DefaultLocalProfileRepository(ProfilePreferencesDataSource(context))
-    }
-    val profile by profileRepository.observeProfile().collectAsStateWithLifecycle(
-        initialValue = org.nimio.app.feature.account.domain.LocalProfile()
+    val session by accountRepository.observeSession().collectAsStateWithLifecycle(
+        initialValue = null
     )
 
     LaunchedEffect(Unit) {
@@ -38,24 +34,27 @@ fun NimioApp() {
         showSplash = false
     }
 
+    LaunchedEffect(session?.isSignedIn) {
+        if (session?.isSignedIn == true) {
+            accountRepository.refreshSession()
+        }
+    }
+
     NimioTheme {
         val stage = when {
             showSplash -> "splash"
-            !profile.onboardingCompleted -> "onboarding"
+            session?.isSignedIn != true -> "auth"
             else -> "app"
         }
 
         Crossfade(targetState = stage, label = "appStage") { currentStage ->
             when (currentStage) {
                 "splash" -> NimioSplashScreen(startAnimation = startAnimation)
-                "onboarding" -> OnboardingScreen(
-                    onContinue = { displayName, bio, avatarUri ->
-                        coroutineScope.launch {
-                            profileRepository.completeOnboarding(displayName, bio, avatarUri)
-                        }
-                    }
+                "auth" -> AuthScreen(accountRepository = accountRepository)
+                else -> NimioNavHost(
+                    profileRepository = profileRepository,
+                    accountRepository = accountRepository
                 )
-                else -> NimioNavHost(profileRepository = profileRepository)
             }
         }
     }

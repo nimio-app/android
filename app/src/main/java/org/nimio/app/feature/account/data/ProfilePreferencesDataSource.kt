@@ -19,6 +19,9 @@ private const val PROFILE_DATASTORE_NAME = "nimio_profile"
 private val Context.profileDataStore: DataStore<Preferences> by preferencesDataStore(name = PROFILE_DATASTORE_NAME)
 
 private object ProfilePreferencesKeys {
+    val userId = stringPreferencesKey("user_id")
+    val email = stringPreferencesKey("email")
+    val username = stringPreferencesKey("username")
     val displayName = stringPreferencesKey("display_name")
     val bio = stringPreferencesKey("bio")
     val avatarUri = stringPreferencesKey("avatar_uri")
@@ -41,6 +44,9 @@ class ProfilePreferencesDataSource(
             }
             .map { preferences ->
                 LocalProfile(
+                    userId = preferences[ProfilePreferencesKeys.userId].orEmpty(),
+                    email = preferences[ProfilePreferencesKeys.email].orEmpty(),
+                    username = preferences[ProfilePreferencesKeys.username].orEmpty(),
                     displayName = preferences[ProfilePreferencesKeys.displayName].orEmpty(),
                     bio = preferences[ProfilePreferencesKeys.bio].orEmpty(),
                     avatarUri = preferences[ProfilePreferencesKeys.avatarUri],
@@ -51,6 +57,9 @@ class ProfilePreferencesDataSource(
 
     suspend fun saveProfile(profile: LocalProfile) {
         dataStore.edit { preferences ->
+            preferences[ProfilePreferencesKeys.userId] = profile.userId
+            preferences[ProfilePreferencesKeys.email] = profile.email
+            preferences[ProfilePreferencesKeys.username] = profile.username
             preferences[ProfilePreferencesKeys.displayName] = profile.displayName
             preferences[ProfilePreferencesKeys.bio] = profile.bio
             profile.avatarUri?.let {

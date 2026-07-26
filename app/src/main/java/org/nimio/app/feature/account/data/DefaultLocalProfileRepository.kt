@@ -1,6 +1,7 @@
 package org.nimio.app.feature.account.data
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import org.nimio.app.feature.account.domain.LocalProfile
 import org.nimio.app.feature.account.domain.LocalProfileRepository
 
@@ -15,8 +16,9 @@ class DefaultLocalProfileRepository(
     }
 
     override suspend fun completeOnboarding(displayName: String, bio: String, avatarUri: String?) {
+        val existing = dataSource.observeProfile().first()
         dataSource.saveProfile(
-            LocalProfile(
+            existing.copy(
                 displayName = displayName.trim(),
                 bio = bio.trim(),
                 avatarUri = avatarUri,

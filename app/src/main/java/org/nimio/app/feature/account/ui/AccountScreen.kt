@@ -19,6 +19,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -46,16 +47,18 @@ import org.nimio.app.core.common.removeAvatarUri
 import org.nimio.app.core.ui.NimioSectionCard
 import org.nimio.app.core.ui.NimioSectionHeader
 import org.nimio.app.core.ui.ProfileAvatar
+import org.nimio.app.feature.account.domain.AccountRepository
 import org.nimio.app.feature.account.domain.LocalProfileRepository
 
 @Composable
 fun AccountScreen(
-    profileRepository: LocalProfileRepository
+    profileRepository: LocalProfileRepository,
+    accountRepository: AccountRepository
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val viewModelFactory = remember(profileRepository) {
-        AccountViewModelFactory(profileRepository)
+    val viewModelFactory = remember(profileRepository, accountRepository) {
+        AccountViewModelFactory(profileRepository, accountRepository)
     }
     val viewModel: AccountViewModel = viewModel(factory = viewModelFactory)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -133,6 +136,17 @@ fun AccountScreen(
                 description = stringResource(id = R.string.account_profile_intro)
             )
 
+            if (uiState.email.isNotBlank()) {
+                Text(
+                    text = stringResource(
+                        id = R.string.account_signed_in_as,
+                        uiState.email
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+                )
+            }
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -181,11 +195,40 @@ fun AccountScreen(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
+            if (uiState.username.isNotBlank()) {
+                Text(
+                    text = "@${uiState.username}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
             Text(
                 text = uiState.bio.ifBlank { stringResource(id = R.string.account_profile_preview_fallback_bio) },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.78f)
             )
+        }
+
+        if (uiState.userId.isNotBlank() || uiState.email.isNotBlank() || uiState.username.isNotBlank()) {
+            NimioSectionCard {
+                NimioSectionHeader(
+                    title = stringResource(id = R.string.account_backend_identity_title),
+                    description = stringResource(id = R.string.account_backend_identity_description)
+                )
+                if (uiState.username.isNotBlank()) {
+                    Text(text = stringResource(id = R.string.account_username_value, uiState.username))
+                }
+                if (uiState.email.isNotBlank()) {
+                    Text(text = stringResource(id = R.string.account_email_value, uiState.email))
+                }
+                if (uiState.userId.isNotBlank()) {
+                    Text(
+                        text = stringResource(id = R.string.account_user_id_value, uiState.userId),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+            }
         }
 
         NimioSectionCard {
@@ -229,9 +272,24 @@ fun AccountScreen(
         }
 
         Text(
-            text = stringResource(id = R.string.sync_status_pending),
+            text = stringResource(id = R.string.account_backend_connected),
             style = MaterialTheme.typography.labelLarge
         )
+
+        OutlinedButton(
+            onClick = viewModel::signOut,
+            enabled = !uiState.isSigningOut,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(14.dp)
+        ) {
+            Text(
+                text = if (uiState.isSigningOut) {
+                    stringResource(id = R.string.account_signing_out)
+                } else {
+                    stringResource(id = R.string.account_sign_out)
+                }
+            )
+        }
     }
 }
 

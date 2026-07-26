@@ -27,17 +27,18 @@ class AuthTokenDataSource @Inject constructor(
 ) {
     private val dataStore: DataStore<Preferences> = context.authDataStore
 
-    suspend fun getToken(): String? {
-        return dataStore.data
-            .catch { error ->
-                if (error is IOException) {
-                    emit(emptyPreferences())
-                } else {
-                    throw error
-                }
+    fun observeToken() = dataStore.data
+        .catch { error ->
+            if (error is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw error
             }
-            .map { preferences -> preferences[AuthPreferencesKeys.accessToken] }
-            .first()
+        }
+        .map { preferences -> preferences[AuthPreferencesKeys.accessToken] }
+
+    suspend fun getToken(): String? {
+        return observeToken().first()
     }
 
     suspend fun setToken(token: String) {

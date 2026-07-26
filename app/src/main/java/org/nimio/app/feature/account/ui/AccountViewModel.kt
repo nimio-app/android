@@ -8,11 +8,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.nimio.app.feature.account.domain.AccountRepository
 import org.nimio.app.feature.account.domain.LocalProfile
 import org.nimio.app.feature.account.domain.LocalProfileRepository
 
 class AccountViewModel(
-    private val repository: LocalProfileRepository
+    private val repository: LocalProfileRepository,
+    private val accountRepository: AccountRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AccountUiState())
     val uiState: StateFlow<AccountUiState> = _uiState.asStateFlow()
@@ -22,11 +24,15 @@ class AccountViewModel(
             repository.observeProfile().collect { profile ->
                 _uiState.update {
                     it.copy(
+                        userId = profile.userId,
+                        email = profile.email,
+                        username = profile.username,
                         displayName = profile.displayName,
                         bio = profile.bio,
                         avatarUri = profile.avatarUri,
                         isSaving = false,
-                        saved = false
+                        saved = false,
+                        isSigningOut = false
                     )
                 }
             }
@@ -51,6 +57,9 @@ class AccountViewModel(
         viewModelScope.launch {
             repository.saveProfile(
                 LocalProfile(
+                    userId = current.userId,
+                    email = current.email,
+                    username = current.username,
                     displayName = current.displayName.trim(),
                     bio = current.bio.trim(),
                     avatarUri = current.avatarUri,
@@ -60,14 +69,28 @@ class AccountViewModel(
             _uiState.update { it.copy(isSaving = false, saved = true) }
         }
     }
+
+    fun signOut() {
+        if (_uiState.value.isSigningOut) return
+
+        _uiState.update { it.copy(isSigningOut = true) }
+        viewModelScope.launch {
+            accountRepository.signOut()
+            _uiState.update { AccountUiState() }
+        }
+    }
 }
 
 class AccountViewModelFactory(
-    private val repository: LocalProfileRepository
+    private val repository: LocalProfileRepository,
+    private val accountRepository: AccountRepository
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return AccountViewModel(repository = repository) as T
+        return AccountViewModel(
+            repository = repository,
+            accountRepository = accountRepository
+        ) as T
     }
 }
 

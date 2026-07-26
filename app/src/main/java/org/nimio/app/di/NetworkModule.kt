@@ -11,6 +11,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import org.nimio.app.core.network.AuthInterceptor
+import org.nimio.app.feature.account.data.AccountApi
 
 private const val NIMIO_BASE_URL = "https://reshape-library-shuffle.ngrok-free.dev/"
 private const val NGROK_SKIP_BROWSER_WARNING_HEADER = "ngrok-skip-browser-warning"
@@ -52,6 +53,12 @@ object NetworkModule {
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAccountApi(retrofit: Retrofit): AccountApi {
+        return retrofit.create(AccountApi::class.java)
     }
 }
 
