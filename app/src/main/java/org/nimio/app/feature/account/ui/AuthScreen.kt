@@ -177,11 +177,6 @@ fun AuthScreen(
                         )
                     }
 
-                    Text(
-                        text = stringResource(id = R.string.auth_note_testing),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
                 }
             }
         }

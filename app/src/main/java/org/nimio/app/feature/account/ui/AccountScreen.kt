@@ -209,28 +209,6 @@ fun AccountScreen(
             )
         }
 
-        if (uiState.userId.isNotBlank() || uiState.email.isNotBlank() || uiState.username.isNotBlank()) {
-            NimioSectionCard {
-                NimioSectionHeader(
-                    title = stringResource(id = R.string.account_backend_identity_title),
-                    description = stringResource(id = R.string.account_backend_identity_description)
-                )
-                if (uiState.username.isNotBlank()) {
-                    Text(text = stringResource(id = R.string.account_username_value, uiState.username))
-                }
-                if (uiState.email.isNotBlank()) {
-                    Text(text = stringResource(id = R.string.account_email_value, uiState.email))
-                }
-                if (uiState.userId.isNotBlank()) {
-                    Text(
-                        text = stringResource(id = R.string.account_user_id_value, uiState.userId),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                }
-            }
-        }
-
         NimioSectionCard {
             NimioSectionHeader(title = stringResource(id = R.string.account_identity_title))
             OutlinedTextField(
@@ -271,10 +249,6 @@ fun AccountScreen(
             )
         }
 
-        Text(
-            text = stringResource(id = R.string.account_backend_connected),
-            style = MaterialTheme.typography.labelLarge
-        )
 
         OutlinedButton(
             onClick = viewModel::signOut,

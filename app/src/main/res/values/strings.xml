@@ -39,12 +39,6 @@
     <string name="account_profile_intro">Set how your loved ones see you in Nimio.</string>
     <string name="account_profile_preview_title">Your profile preview</string>
     <string name="account_profile_preview_fallback_bio">Add a short note so people know when you are easiest to reach.</string>
-    <string name="account_backend_identity_title">Backend account</string>
-    <string name="account_backend_identity_description">This identity comes from the live Nimio backend session.</string>
-    <string name="account_username_value">Username: @%1$s</string>
-    <string name="account_email_value">Email: %1$s</string>
-    <string name="account_user_id_value">User ID: %1$s</string>
-    <string name="account_backend_connected">Connected to the Nimio backend</string>
     <string name="account_sign_out">Sign out</string>
     <string name="account_signing_out">Signing out…</string>
 
@@ -62,7 +56,7 @@
     <string name="onboarding_preview_bio_fallback">Add a short note so people know your rhythm.</string>
     <string name="account_avatar_content_description">Profile photo</string>
     <string name="auth_register_title">Create your Nimio account</string>
-    <string name="auth_register_subtitle">Use the live backend so your profile and future status feed can sync across devices.</string>
+    <string name="auth_register_subtitle">Create your account to start sharing your availability.</string>
     <string name="auth_login_title">Welcome back</string>
     <string name="auth_login_subtitle">Sign in with the account you already created on Nimio.</string>
     <string name="auth_create_account">Create account</string>
@@ -72,7 +66,6 @@
     <string name="auth_username_label">Username</string>
     <string name="auth_username_placeholder">e.g. lakky</string>
     <string name="auth_working">Talking to Nimio…</string>
-    <string name="auth_note_testing">Testing note: this hits the current ngrok-backed API and stores your JWT locally on device.</string>
 
     <string name="social_circles_title">Circles</string>
     <string name="social_circles_description">Friends, teammates, and family groups will define who sees each status.</string>

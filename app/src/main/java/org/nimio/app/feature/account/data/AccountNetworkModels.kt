@@ -11,6 +11,12 @@ data class ApiEnvelope<T>(
 )
 
 @Serializable
+data class ApiFailureEnvelope(
+    val success: Boolean = false,
+    val error: ApiErrorDto? = null
+)
+
+@Serializable
 data class ApiErrorDto(
     val code: String? = null,
     val message: String

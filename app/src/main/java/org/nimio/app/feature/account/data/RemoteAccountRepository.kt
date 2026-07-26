@@ -3,6 +3,8 @@ package org.nimio.app.feature.account.data
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.decodeFromString
 import org.nimio.app.core.common.NimioResult
 import org.nimio.app.core.network.AuthTokenDataSource
 import org.nimio.app.feature.account.domain.AccountRepository
@@ -14,7 +16,8 @@ import javax.inject.Inject
 class RemoteAccountRepository @Inject constructor(
     private val accountApi: AccountApi,
     private val authTokenDataSource: AuthTokenDataSource,
-    private val profileDataSource: ProfilePreferencesDataSource
+    private val profileDataSource: ProfilePreferencesDataSource,
+    private val json: Json
 ) : AccountRepository {
 
     override fun observeSession(): Flow<AccountSession?> {
@@ -58,7 +61,7 @@ class RemoteAccountRepository @Inject constructor(
             payload.toAccountSession()
         }.fold(
             onSuccess = { NimioResult.Success(it) },
-            onFailure = { NimioResult.Error(it) }
+            onFailure = { NimioResult.Error(it.toUserFacingAuthError(json)) }
         )
     }
 
@@ -80,7 +83,7 @@ class RemoteAccountRepository @Inject constructor(
             payload.toAccountSession()
         }.fold(
             onSuccess = { NimioResult.Success(it) },
-            onFailure = { NimioResult.Error(it) }
+            onFailure = { NimioResult.Error(it.toUserFacingAuthError(json)) }
         )
     }
 
@@ -170,5 +173,26 @@ private fun LocalProfile.toAccountSession(): AccountSession {
         displayName = displayName.ifBlank { username.ifBlank { "Nimio" } },
         isSignedIn = onboardingCompleted
     )
+}
+
+private fun Throwable.toUserFacingAuthError(json: Json): Throwable {
+    if (this !is HttpException) return this
+
+    val parsedMessage = response()
+        ?.errorBody()
+        ?.string()
+        ?.let { body ->
+            runCatching {
+                json.decodeFromString<ApiFailureEnvelope>(body).error?.message
+            }.getOrNull()
+        }
+
+    val fallback = when (code()) {
+        409 -> "That email or username is already taken."
+        401 -> "Invalid email or password."
+        else -> "Unable to complete this request right now."
+    }
+
+    return IllegalStateException(parsedMessage ?: fallback, this)
 }
 
