@@ -37,6 +37,11 @@ data class LoginRequestDto(
 )
 
 @Serializable
+data class ResendVerificationRequestDto(
+    val email: String
+)
+
+@Serializable
 data class AuthPayloadDto(
     val user: UserDto,
     val profile: ProfileDto,
@@ -53,6 +58,7 @@ data class ProfilePayloadDto(
 data class UserDto(
     val id: String,
     val email: String,
+    @SerialName("email_verified") val emailVerified: Boolean = false,
     @SerialName("created_at") val createdAt: String,
     @SerialName("updated_at") val updatedAt: String
 )

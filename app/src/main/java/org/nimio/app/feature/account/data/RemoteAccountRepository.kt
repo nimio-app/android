@@ -87,6 +87,17 @@ class RemoteAccountRepository @Inject constructor(
         )
     }
 
+    override suspend fun resendVerification(email: String): NimioResult<Unit> {
+        return runCatching {
+            accountApi.resendVerification(
+                ResendVerificationRequestDto(email = email.trim())
+            ).requireSuccess()
+        }.fold(
+            onSuccess = { NimioResult.Success(Unit) },
+            onFailure = { NimioResult.Error(it.toUserFacingAuthError(json)) }
+        )
+    }
+
     override suspend fun refreshSession(): NimioResult<AccountSession?> {
         val existing = profileDataSource.observeProfile().first()
         if (authTokenDataSource.getToken().isNullOrBlank()) {
@@ -99,6 +110,7 @@ class RemoteAccountRepository @Inject constructor(
             val updatedProfile = existing.copy(
                 userId = payload.user.id,
                 email = payload.user.email,
+                emailVerified = payload.user.emailVerified,
                 username = payload.profile.username,
                 displayName = payload.profile.displayName,
                 bio = payload.profile.bio ?: existing.bio,
@@ -133,6 +145,7 @@ class RemoteAccountRepository @Inject constructor(
             existing.copy(
                 userId = payload.user.id,
                 email = payload.user.email,
+                emailVerified = payload.user.emailVerified,
                 username = payload.profile.username,
                 displayName = payload.profile.displayName,
                 bio = payload.profile.bio ?: existing.bio,
@@ -156,6 +169,12 @@ private fun ApiEnvelope<ProfilePayloadDto>.requireData(): ProfilePayloadDto {
         data
     } else {
         throw IllegalStateException(error?.message ?: "Unknown profile error")
+    }
+}
+
+private fun ApiEnvelope<Map<String, String>>.requireSuccess() {
+    if (!success) {
+        throw IllegalStateException(error?.message ?: "Unable to resend verification email")
     }
 }
 

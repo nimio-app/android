@@ -15,6 +15,11 @@ interface AccountApi {
         @Body request: LoginRequestDto
     ): ApiEnvelope<AuthPayloadDto>
 
+    @POST("v1/auth/resend-verification")
+    suspend fun resendVerification(
+        @Body request: ResendVerificationRequestDto
+    ): ApiEnvelope<Map<String, String>>
+
     @GET("v1/me/profile")
     suspend fun getMyProfile(): ApiEnvelope<ProfilePayloadDto>
 }

@@ -19,6 +19,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,6 +27,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -35,6 +38,9 @@ import org.nimio.app.R
 import org.nimio.app.feature.account.domain.AccountRepository
 import org.nimio.app.feature.account.domain.LocalProfileRepository
 import org.nimio.app.feature.account.ui.AccountScreen
+import org.nimio.app.feature.account.ui.EmailVerificationBannerViewModel
+import org.nimio.app.feature.account.ui.EmailVerificationBannerViewModelFactory
+import org.nimio.app.feature.account.ui.VerificationBanner
 import org.nimio.app.feature.social.ui.SocialGraphScreen
 import org.nimio.app.feature.status.ui.StatusScreen
 
@@ -47,38 +53,52 @@ fun NimioNavHost(
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
+    val bannerViewModelFactory = remember(profileRepository, accountRepository) {
+        EmailVerificationBannerViewModelFactory(profileRepository, accountRepository)
+    }
+    val bannerViewModel: EmailVerificationBannerViewModel = viewModel(factory = bannerViewModelFactory)
+    val bannerUiState by bannerViewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Image(
-                            painter = painterResource(id = R.drawable.nimio_logo),
-                            contentDescription = stringResource(id = R.string.nimio_logo_content_description),
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(RoundedCornerShape(10.dp)),
-                            contentScale = ContentScale.Crop
-                        )
-                        Spacer(modifier = Modifier.size(10.dp))
-                        Column {
-                            Text(text = stringResource(id = R.string.app_name))
-                            Text(
-                                text = stringResource(id = R.string.app_tagline),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+            Column {
+                TopAppBar(
+                    title = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Image(
+                                painter = painterResource(id = R.drawable.nimio_logo),
+                                contentDescription = stringResource(id = R.string.nimio_logo_content_description),
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(10.dp)),
+                                contentScale = ContentScale.Crop
                             )
+                            Spacer(modifier = Modifier.size(10.dp))
+                            Column {
+                                Text(text = stringResource(id = R.string.app_name))
+                                Text(
+                                    text = stringResource(id = R.string.app_tagline),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+                                )
+                            }
                         }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onBackground
-                ),
-                expandedHeight = 72.dp
-            )
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        titleContentColor = MaterialTheme.colorScheme.primary,
+                        actionIconContentColor = MaterialTheme.colorScheme.onBackground
+                    ),
+                    expandedHeight = 72.dp
+                )
+
+                VerificationBanner(
+                    uiState = bannerUiState,
+                    onResendClick = bannerViewModel::resendVerificationEmail,
+                    onDismissClick = bannerViewModel::dismissBanner,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
         },
         bottomBar = {
             NavigationBar(

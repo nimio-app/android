@@ -21,6 +21,7 @@ private val Context.profileDataStore: DataStore<Preferences> by preferencesDataS
 private object ProfilePreferencesKeys {
     val userId = stringPreferencesKey("user_id")
     val email = stringPreferencesKey("email")
+    val emailVerified = booleanPreferencesKey("email_verified")
     val username = stringPreferencesKey("username")
     val displayName = stringPreferencesKey("display_name")
     val bio = stringPreferencesKey("bio")
@@ -46,6 +47,7 @@ class ProfilePreferencesDataSource(
                 LocalProfile(
                     userId = preferences[ProfilePreferencesKeys.userId].orEmpty(),
                     email = preferences[ProfilePreferencesKeys.email].orEmpty(),
+                    emailVerified = preferences[ProfilePreferencesKeys.emailVerified] ?: false,
                     username = preferences[ProfilePreferencesKeys.username].orEmpty(),
                     displayName = preferences[ProfilePreferencesKeys.displayName].orEmpty(),
                     bio = preferences[ProfilePreferencesKeys.bio].orEmpty(),
@@ -59,6 +61,7 @@ class ProfilePreferencesDataSource(
         dataStore.edit { preferences ->
             preferences[ProfilePreferencesKeys.userId] = profile.userId
             preferences[ProfilePreferencesKeys.email] = profile.email
+            preferences[ProfilePreferencesKeys.emailVerified] = profile.emailVerified
             preferences[ProfilePreferencesKeys.username] = profile.username
             preferences[ProfilePreferencesKeys.displayName] = profile.displayName
             preferences[ProfilePreferencesKeys.bio] = profile.bio
