@@ -19,6 +19,8 @@ interface AccountRepository {
 
     suspend fun resendVerification(email: String): NimioResult<Unit>
 
+    suspend fun verifyEmailToken(token: String): NimioResult<Unit>
+
     suspend fun refreshSession(): NimioResult<AccountSession?>
     suspend fun signOut()
 }

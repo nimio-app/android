@@ -44,6 +44,10 @@ class InMemoryAccountRepository : AccountRepository {
         return NimioResult.Success(Unit)
     }
 
+    override suspend fun verifyEmailToken(token: String): NimioResult<Unit> {
+        return NimioResult.Success(Unit)
+    }
+
     override suspend fun refreshSession(): NimioResult<AccountSession?> {
         return NimioResult.Success(session.value)
     }

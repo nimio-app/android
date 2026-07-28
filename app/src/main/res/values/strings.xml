@@ -67,10 +67,14 @@
     <string name="auth_username_placeholder">e.g. lakky</string>
     <string name="auth_working">Talking to Nimio…</string>
     <string name="verification_banner_title">Verify your email</string>
+    <string name="verification_banner_subtitle">Tap the link sent to %1$s to finish setup.</string>
     <string name="verification_banner_resend">Resend Email</string>
     <string name="verification_banner_sending">Sending…</string>
-    <string name="verification_banner_resend_cooldown">Resend in %1$ss</string>
+    <string name="verification_banner_resend_cooldown">Resend in %1$ds</string>
     <string name="verification_banner_dismiss">Dismiss verification banner</string>
+    <string name="verification_success">Email verified. You are all set.</string>
+    <string name="verification_failed">Could not verify this email link.</string>
+    <string name="verification_link_invalid">This verification link is invalid.</string>
 
     <string name="social_circles_title">Circles</string>
     <string name="social_circles_description">Friends, teammates, and family groups will define who sees each status.</string>

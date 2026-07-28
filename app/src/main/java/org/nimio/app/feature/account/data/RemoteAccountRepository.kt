@@ -91,7 +91,33 @@ class RemoteAccountRepository @Inject constructor(
         return runCatching {
             accountApi.resendVerification(
                 ResendVerificationRequestDto(email = email.trim())
-            ).requireSuccess()
+            ).requireSuccess(fallbackMessage = "Unable to resend verification email")
+        }.fold(
+            onSuccess = { NimioResult.Success(Unit) },
+            onFailure = { NimioResult.Error(it.toUserFacingAuthError(json)) }
+        )
+    }
+
+    override suspend fun verifyEmailToken(token: String): NimioResult<Unit> {
+        val cleanToken = token.trim()
+        if (cleanToken.isBlank()) {
+            return NimioResult.Error(IllegalStateException("Verification link is missing a token."))
+        }
+
+        return runCatching {
+            runCatching {
+                accountApi.verifyEmailPost(
+                    VerifyEmailRequestDto(token = cleanToken)
+                ).requireSuccess(fallbackMessage = "Unable to verify email")
+            }.recoverCatching { error ->
+                // Support backends that expose GET /v1/auth/verify-email?token=... instead of POST.
+                if (error is HttpException && (error.code() == 404 || error.code() == 405)) {
+                    accountApi.verifyEmailGet(cleanToken)
+                        .requireSuccess(fallbackMessage = "Unable to verify email")
+                } else {
+                    throw error
+                }
+            }.getOrThrow()
         }.fold(
             onSuccess = { NimioResult.Success(Unit) },
             onFailure = { NimioResult.Error(it.toUserFacingAuthError(json)) }
@@ -172,9 +198,9 @@ private fun ApiEnvelope<ProfilePayloadDto>.requireData(): ProfilePayloadDto {
     }
 }
 
-private fun ApiEnvelope<Map<String, String>>.requireSuccess() {
+private fun <T> ApiEnvelope<T>.requireSuccess(fallbackMessage: String) {
     if (!success) {
-        throw IllegalStateException(error?.message ?: "Unable to resend verification email")
+        throw IllegalStateException(error?.message ?: fallbackMessage)
     }
 }
 

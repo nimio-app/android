@@ -42,6 +42,11 @@ data class ResendVerificationRequestDto(
 )
 
 @Serializable
+data class VerifyEmailRequestDto(
+    val token: String
+)
+
+@Serializable
 data class AuthPayloadDto(
     val user: UserDto,
     val profile: ProfileDto,
