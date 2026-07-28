@@ -36,6 +36,10 @@ class EmailVerificationBannerViewModel(
 
     init {
         viewModelScope.launch {
+            accountRepository.refreshSession()
+        }
+
+        viewModelScope.launch {
             profileRepository.observeProfile().collect { profile ->
                 _uiState.update {
                     it.copy(

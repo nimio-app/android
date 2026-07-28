@@ -3,7 +3,11 @@ package org.nimio.app.feature.account.data
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.DELETE
 import retrofit2.http.Query
+import retrofit2.http.Multipart
+import retrofit2.http.Part
+import okhttp3.MultipartBody
 
 interface AccountApi {
     @POST("v1/auth/register")
@@ -33,5 +37,14 @@ interface AccountApi {
 
     @GET("v1/me/profile")
     suspend fun getMyProfile(): ApiEnvelope<ProfilePayloadDto>
+
+    @Multipart
+    @POST("v1/me/avatar")
+    suspend fun uploadAvatar(
+        @Part avatar: MultipartBody.Part
+    ): ApiEnvelope<AvatarUploadResponseDto>
+
+    @DELETE("v1/me/avatar")
+    suspend fun deleteAvatar(): ApiEnvelope<Map<String, String>>
 }
 

@@ -83,7 +83,7 @@ fun AccountScreen(
 
                 if (importedAvatar != null) {
                     removeAvatarUri(context, oldAvatar)
-                    viewModel.onAvatarChanged(importedAvatar)
+                    viewModel.uploadAvatar(Uri.parse(importedAvatar).path ?: importedAvatar)
                 }
             } finally {
                 if (sourceUri != null) {
@@ -111,7 +111,7 @@ fun AccountScreen(
                         val importedAvatar = importCroppedAvatar(context, uri)
                         if (importedAvatar != null) {
                             removeAvatarUri(context, oldAvatar)
-                            viewModel.onAvatarChanged(importedAvatar)
+                            viewModel.uploadAvatar(Uri.parse(importedAvatar).path ?: importedAvatar)
                         }
                     } finally {
                         releaseReadPermission(context, uri.toString())
@@ -181,7 +181,7 @@ fun AccountScreen(
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.clickable {
                             removeAvatarUri(context, uiState.avatarUri)
-                            viewModel.onAvatarChanged(null)
+                            viewModel.deleteAvatar()
                         }
                     )
                 }

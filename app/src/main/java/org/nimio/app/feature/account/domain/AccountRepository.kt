@@ -21,6 +21,10 @@ interface AccountRepository {
 
     suspend fun verifyEmailToken(token: String): NimioResult<Unit>
 
+    suspend fun uploadAvatar(filePath: String): NimioResult<String>
+
+    suspend fun deleteAvatar(): NimioResult<Unit>
+
     suspend fun refreshSession(): NimioResult<AccountSession?>
     suspend fun signOut()
 }

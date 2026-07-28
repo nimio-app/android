@@ -3,6 +3,7 @@ package org.nimio.app.feature.account.ui
 data class AccountUiState(
     val userId: String = "",
     val email: String = "",
+    val emailVerified: Boolean = false,
     val username: String = "",
     val displayName: String = "",
     val bio: String = "",

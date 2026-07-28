@@ -26,7 +26,11 @@ class AuthInterceptor @Inject constructor(
             .header("Authorization", "Bearer $token")
             .build()
 
-        return chain.proceed(authorizedRequest)
+        val response = chain.proceed(authorizedRequest)
+        if (response.code == 401) {
+            android.util.Log.w("AuthInterceptor", "401 on $path with token: ${token.take(10)}...")
+        }
+        return response
     }
 
     private fun requiresAuthorization(path: String): Boolean {

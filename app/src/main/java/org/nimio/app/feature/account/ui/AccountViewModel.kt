@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.nimio.app.core.common.NimioResult
 import org.nimio.app.feature.account.domain.AccountRepository
 import org.nimio.app.feature.account.domain.LocalProfile
 import org.nimio.app.feature.account.domain.LocalProfileRepository
@@ -26,6 +27,7 @@ class AccountViewModel(
                     it.copy(
                         userId = profile.userId,
                         email = profile.email,
+                        emailVerified = profile.emailVerified,
                         username = profile.username,
                         displayName = profile.displayName,
                         bio = profile.bio,
@@ -51,6 +53,62 @@ class AccountViewModel(
         _uiState.update { it.copy(avatarUri = avatarUri, saved = false) }
     }
 
+    fun uploadAvatar(filePath: String) {
+        _uiState.update { it.copy(isSaving = true) }
+        viewModelScope.launch {
+            val result = accountRepository.uploadAvatar(filePath)
+            when (result) {
+                is NimioResult.Success -> {
+                    val current = _uiState.value
+                    repository.saveProfile(
+                        LocalProfile(
+                            userId = current.userId,
+                            email = current.email,
+                            emailVerified = current.emailVerified,
+                            username = current.username,
+                            displayName = current.displayName.trim(),
+                            bio = current.bio.trim(),
+                            avatarUri = result.value,
+                            onboardingCompleted = true
+                        )
+                    )
+                    _uiState.update { it.copy(isSaving = false, saved = true) }
+                }
+                is NimioResult.Error -> {
+                    _uiState.update { it.copy(isSaving = false) }
+                }
+            }
+        }
+    }
+
+    fun deleteAvatar() {
+        _uiState.update { it.copy(isSaving = true) }
+        viewModelScope.launch {
+            val result = accountRepository.deleteAvatar()
+            when (result) {
+                is NimioResult.Success -> {
+                    val current = _uiState.value
+                    repository.saveProfile(
+                        LocalProfile(
+                            userId = current.userId,
+                            email = current.email,
+                            emailVerified = current.emailVerified,
+                            username = current.username,
+                            displayName = current.displayName.trim(),
+                            bio = current.bio.trim(),
+                            avatarUri = null,
+                            onboardingCompleted = true
+                        )
+                    )
+                    _uiState.update { it.copy(isSaving = false, saved = true) }
+                }
+                is NimioResult.Error -> {
+                    _uiState.update { it.copy(isSaving = false) }
+                }
+            }
+        }
+    }
+
     fun saveProfile() {
         val current = _uiState.value
         _uiState.update { it.copy(isSaving = true) }
@@ -59,6 +117,7 @@ class AccountViewModel(
                 LocalProfile(
                     userId = current.userId,
                     email = current.email,
+                    emailVerified = current.emailVerified,
                     username = current.username,
                     displayName = current.displayName.trim(),
                     bio = current.bio.trim(),

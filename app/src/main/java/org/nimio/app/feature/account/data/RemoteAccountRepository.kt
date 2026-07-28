@@ -1,16 +1,21 @@
 package org.nimio.app.feature.account.data
 
+import android.net.Uri
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.decodeFromString
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import org.nimio.app.core.common.NimioResult
 import org.nimio.app.core.network.AuthTokenDataSource
 import org.nimio.app.feature.account.domain.AccountRepository
 import org.nimio.app.feature.account.domain.AccountSession
 import org.nimio.app.feature.account.domain.LocalProfile
 import retrofit2.HttpException
+import java.io.File
 import javax.inject.Inject
 
 class RemoteAccountRepository @Inject constructor(
@@ -163,6 +168,41 @@ class RemoteAccountRepository @Inject constructor(
         profileDataSource.saveProfile(LocalProfile())
     }
 
+    override suspend fun uploadAvatar(filePath: String): NimioResult<String> {
+        val file = filePath.toAvatarFileOrNull()
+            ?: return NimioResult.Error(IllegalStateException("Avatar file not found: $filePath"))
+        if (!file.exists() || !file.isFile) {
+            return NimioResult.Error(IllegalStateException("Avatar file not found: $filePath"))
+        }
+
+        if (file.length() > 5 * 1024 * 1024) {
+            return NimioResult.Error(IllegalStateException("Avatar file exceeds 5MB limit."))
+        }
+
+        return runCatching {
+            val requestBody = file.asRequestBody("image/*".toMediaType())
+            val part = MultipartBody.Part.createFormData("avatar", file.name, requestBody)
+            val response = accountApi.uploadAvatar(part)
+            if (response.success && response.data != null) {
+                response.data.avatarUrl
+            } else {
+                throw IllegalStateException(response.error?.message ?: "Avatar upload failed")
+            }
+        }.fold(
+            onSuccess = { NimioResult.Success(it) },
+            onFailure = { NimioResult.Error(it.toUserFacingAuthError(json)) }
+        )
+    }
+
+    override suspend fun deleteAvatar(): NimioResult<Unit> {
+        return runCatching {
+            accountApi.deleteAvatar().requireSuccess(fallbackMessage = "Unable to delete avatar")
+        }.fold(
+            onSuccess = { NimioResult.Success(Unit) },
+            onFailure = { NimioResult.Error(it.toUserFacingAuthError(json)) }
+        )
+    }
+
     private suspend fun saveMergedProfile(
         existing: LocalProfile,
         payload: AuthPayloadDto
@@ -239,5 +279,18 @@ private fun Throwable.toUserFacingAuthError(json: Json): Throwable {
     }
 
     return IllegalStateException(parsedMessage ?: fallback, this)
+}
+
+private fun String.toAvatarFileOrNull(): File? {
+    if (isBlank()) return null
+
+    return runCatching {
+        val parsed = Uri.parse(this)
+        when {
+            parsed.scheme == "file" -> parsed.path?.let(::File)
+            parsed.scheme.isNullOrBlank() -> File(this)
+            else -> null
+        }
+    }.getOrNull()
 }
 

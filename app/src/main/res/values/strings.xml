@@ -41,6 +41,8 @@
     <string name="account_profile_preview_fallback_bio">Add a short note so people know when you are easiest to reach.</string>
     <string name="account_sign_out">Sign out</string>
     <string name="account_signing_out">Signing out…</string>
+    <string name="account_avatar_uploading">Uploading photo…</string>
+    <string name="account_avatar_upload_error">Photo upload failed. Please try again.</string>
 
     <string name="onboarding_title">Welcome to Nimio</string>
     <string name="onboarding_subtitle">Set up your profile so loved ones recognize you right away.</string>

@@ -135,6 +135,14 @@ class AuthViewModelTest {
         override suspend fun signOut() {
             session.value = null
         }
+
+        override suspend fun uploadAvatar(filePath: String): NimioResult<String> {
+            return NimioResult.Success("https://example.com/avatars/test.jpg")
+        }
+
+        override suspend fun deleteAvatar(): NimioResult<Unit> {
+            return NimioResult.Success(Unit)
+        }
     }
 }
 
