@@ -212,6 +212,15 @@ fun AccountScreen(
         NimioSectionCard {
             NimioSectionHeader(title = stringResource(id = R.string.account_identity_title))
             OutlinedTextField(
+                value = uiState.username,
+                onValueChange = viewModel::onUsernameChanged,
+                label = { Text(text = stringResource(id = R.string.auth_username_label)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                shape = RoundedCornerShape(14.dp)
+            )
+
+            OutlinedTextField(
                 value = uiState.displayName,
                 onValueChange = viewModel::onDisplayNameChanged,
                 label = { Text(text = stringResource(id = R.string.account_display_name_label)) },
@@ -234,7 +243,7 @@ fun AccountScreen(
 
         Button(
             onClick = viewModel::saveProfile,
-            enabled = uiState.displayName.trim().isNotEmpty() && !uiState.isSaving && !isPhotoProcessing,
+            enabled = uiState.displayName.trim().isNotEmpty() && uiState.username.trim().isNotEmpty() && !uiState.isSaving && !isPhotoProcessing,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),

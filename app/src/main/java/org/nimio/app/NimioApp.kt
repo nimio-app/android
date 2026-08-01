@@ -13,6 +13,8 @@ import org.nimio.app.feature.account.domain.AccountRepository
 import org.nimio.app.feature.account.domain.AccountSession
 import org.nimio.app.feature.account.domain.LocalProfileRepository
 import org.nimio.app.feature.account.ui.AuthScreen
+import org.nimio.app.feature.social.domain.SocialGraphRepository
+import org.nimio.app.feature.status.domain.StatusRepository
 import org.nimio.app.navigation.NimioNavHost
 import org.nimio.app.ui.splash.NimioSplashScreen
 import org.nimio.app.ui.theme.NimioTheme
@@ -20,7 +22,9 @@ import org.nimio.app.ui.theme.NimioTheme
 @Composable
 fun NimioApp(
     accountRepository: AccountRepository,
-    profileRepository: LocalProfileRepository
+    profileRepository: LocalProfileRepository,
+    socialGraphRepository: SocialGraphRepository,
+    statusRepository: StatusRepository
 ) {
     var showSplash by remember { mutableStateOf(true) }
     var startAnimation by remember { mutableStateOf(false) }
@@ -53,7 +57,9 @@ fun NimioApp(
                 "auth" -> AuthScreen(accountRepository = accountRepository)
                 else -> NimioNavHost(
                     profileRepository = profileRepository,
-                    accountRepository = accountRepository
+                    accountRepository = accountRepository,
+                    socialGraphRepository = socialGraphRepository,
+                    statusRepository = statusRepository
                 )
             }
         }

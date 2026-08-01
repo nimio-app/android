@@ -12,5 +12,11 @@ class DefaultStatusRepository(
     override suspend fun saveStatus(status: UserStatus) {
         dataSource.saveStatus(status)
     }
+
+    override suspend fun refreshStatus() = Unit
+
+    override suspend fun clearStatus() {
+        dataSource.saveStatus(UserStatus())
+    }
 }
 

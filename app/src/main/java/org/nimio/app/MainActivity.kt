@@ -13,21 +13,49 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.nimio.app.feature.account.domain.AccountRepository
 import org.nimio.app.feature.account.domain.LocalProfileRepository
+import org.nimio.app.feature.social.domain.SocialGraphRepository
+import org.nimio.app.feature.status.domain.StatusRepository
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @Inject lateinit var accountRepository: AccountRepository
     @Inject lateinit var profileRepository: LocalProfileRepository
+    @Inject lateinit var socialGraphRepository: SocialGraphRepository
+    @Inject lateinit var statusRepository: StatusRepository
+    private var syncedSessionUserId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         handleEmailVerificationIntent(intent)
+        observeSessionBackedData()
         setContent {
             NimioApp(
                 accountRepository = accountRepository,
-                profileRepository = profileRepository
+                profileRepository = profileRepository,
+                socialGraphRepository = socialGraphRepository,
+                statusRepository = statusRepository
             )
+        }
+    }
+
+    private fun observeSessionBackedData() {
+        lifecycleScope.launch {
+            accountRepository.observeSession().collect { session ->
+                val activeUserId = session?.userId?.takeIf { it.isNotBlank() }
+                if (activeUserId == null) {
+                    syncedSessionUserId = null
+                    return@collect
+                }
+
+                if (syncedSessionUserId == activeUserId) {
+                    return@collect
+                }
+
+                syncedSessionUserId = activeUserId
+                runCatching { statusRepository.refreshStatus() }
+                runCatching { socialGraphRepository.refreshConnections(status = null) }
+            }
         }
     }
 

@@ -10,25 +10,25 @@ enum class Availability(
         displayLabel = "Free to chat",
         hint = "Open and happy to hear from you"
     ),
-    FOCUSED(
+    BUSY(
+        emoji = "🟠",
+        displayLabel = "Busy",
+        hint = "Occupied, but you can still reach me"
+    ),
+    FOCUS(
         emoji = "🎯",
-        displayLabel = "In deep focus",
+        displayLabel = "Focus",
         hint = "Heads down, back soon"
     ),
-    AWAY(
-        emoji = "⏰",
-        displayLabel = "Back soon",
-        hint = "Stepping away for a bit"
+    DRIVING(
+        emoji = "🚗",
+        displayLabel = "Driving",
+        hint = "On the road right now"
     ),
-    WANT_TO_CONNECT(
+    WANT_TO_TALK(
         emoji = "❤️",
-        displayLabel = "Want to connect",
+        displayLabel = "Want to talk",
         hint = "Feeling social — reach out"
-    ),
-    RESTING(
-        emoji = "🌙",
-        displayLabel = "Taking a break",
-        hint = "Resting, catch you tomorrow"
     )
 }
 

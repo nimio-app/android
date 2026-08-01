@@ -38,20 +38,20 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import org.nimio.app.R
 import org.nimio.app.core.ui.NimioSectionCard
 import org.nimio.app.core.ui.NimioSectionHeader
-import org.nimio.app.feature.status.data.DefaultStatusRepository
-import org.nimio.app.feature.status.data.StatusPreferencesDataSource
 import org.nimio.app.feature.status.domain.Availability
 import org.nimio.app.feature.status.domain.StatusExpiry
+import org.nimio.app.feature.status.domain.StatusRepository
+import org.nimio.app.feature.status.domain.VisibilityTier
 import org.nimio.app.feature.status.sync.WorkManagerStatusExpiryScheduler
 
 @Composable
-fun StatusScreen() {
+fun StatusScreen(
+    repository: StatusRepository
+) {
     val context = LocalContext.current
     val viewModelFactory = androidx.compose.runtime.remember(context) {
         StatusViewModelFactory(
-            repository = DefaultStatusRepository(
-                dataSource = StatusPreferencesDataSource(context)
-            ),
+            repository = repository,
             expiryScheduler = WorkManagerStatusExpiryScheduler(context)
         )
     }
@@ -103,6 +103,17 @@ fun StatusScreen() {
             ExpirySelector(
                 selected = uiState.selectedExpiry,
                 onSelected = viewModel::onExpirySelected
+            )
+        }
+
+        NimioSectionCard {
+            NimioSectionHeader(
+                title = stringResource(id = R.string.status_visibility_title),
+                description = stringResource(id = R.string.status_visibility_description)
+            )
+            VisibilityTierSelector(
+                selected = uiState.selectedVisibilityTier,
+                onSelected = viewModel::onVisibilityTierSelected
             )
         }
 
@@ -267,3 +278,27 @@ private fun ExpirySelector(
         }
     }
 }
+
+@Composable
+private fun VisibilityTierSelector(
+    selected: VisibilityTier,
+    onSelected: (VisibilityTier) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        VisibilityTier.entries.forEach { tier ->
+            FilterChip(
+                selected = tier == selected,
+                onClick = { onSelected(tier) },
+                label = { Text(text = tier.displayLabel) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                text = tier.description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+            )
+        }
+    }
+}
+

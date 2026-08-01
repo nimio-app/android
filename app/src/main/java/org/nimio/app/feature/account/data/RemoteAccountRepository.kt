@@ -145,6 +145,39 @@ class RemoteAccountRepository @Inject constructor(
         )
     }
 
+    override suspend fun updateProfile(
+        username: String,
+        displayName: String,
+        bio: String
+    ): NimioResult<Unit> {
+        return runCatching {
+            val response = accountApi.updateMyProfile(
+                UpdateProfileRequestDto(
+                    username = username.trim(),
+                    displayName = displayName.trim(),
+                    bio = bio.trim().ifBlank { null }
+                )
+            )
+            val payload = response.requireData()
+            val existing = profileDataSource.observeProfile().first()
+            profileDataSource.saveProfile(
+                existing.copy(
+                    userId = payload.user.id,
+                    email = payload.user.email,
+                    emailVerified = payload.user.emailVerified,
+                    username = payload.profile.username,
+                    displayName = payload.profile.displayName,
+                    bio = payload.profile.bio ?: "",
+                    avatarUri = payload.profile.avatarUrl ?: existing.avatarUri,
+                    onboardingCompleted = true
+                )
+            )
+        }.fold(
+            onSuccess = { NimioResult.Success(Unit) },
+            onFailure = { NimioResult.Error(it.toUserFacingAuthError(json)) }
+        )
+    }
+
     override suspend fun refreshSession(): NimioResult<AccountSession?> {
         val existing = profileDataSource.observeProfile().first()
         if (authTokenDataSource.getToken().isNullOrBlank()) {

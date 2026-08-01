@@ -41,14 +41,18 @@ import org.nimio.app.feature.account.ui.AccountScreen
 import org.nimio.app.feature.account.ui.EmailVerificationBannerViewModel
 import org.nimio.app.feature.account.ui.EmailVerificationBannerViewModelFactory
 import org.nimio.app.feature.account.ui.VerificationBanner
+import org.nimio.app.feature.social.domain.SocialGraphRepository
 import org.nimio.app.feature.social.ui.SocialGraphScreen
+import org.nimio.app.feature.status.domain.StatusRepository
 import org.nimio.app.feature.status.ui.StatusScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NimioNavHost(
     profileRepository: LocalProfileRepository,
-    accountRepository: AccountRepository
+    accountRepository: AccountRepository,
+    socialGraphRepository: SocialGraphRepository,
+    statusRepository: StatusRepository
 ) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -139,10 +143,10 @@ fun NimioNavHost(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(route = StatusDestination.route) {
-                StatusScreen()
+                StatusScreen(repository = statusRepository)
             }
             composable(route = SocialDestination.route) {
-                SocialGraphScreen()
+                SocialGraphScreen(socialGraphRepository = socialGraphRepository)
             }
             composable(route = AccountDestination.route) {
                 AccountScreen(

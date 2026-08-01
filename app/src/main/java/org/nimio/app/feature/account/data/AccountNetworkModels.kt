@@ -47,6 +47,13 @@ data class VerifyEmailRequestDto(
 )
 
 @Serializable
+data class UpdateProfileRequestDto(
+    val username: String,
+    @SerialName("display_name") val displayName: String,
+    val bio: String? = null
+)
+
+@Serializable
 data class AvatarUploadResponseDto(
     @SerialName("avatar_url") val avatarUrl: String,
     val message: String = "Avatar uploaded successfully"

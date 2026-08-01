@@ -12,6 +12,7 @@ import org.nimio.app.feature.status.domain.Availability
 import org.nimio.app.feature.status.domain.StatusExpiry
 import org.nimio.app.feature.status.domain.StatusRepository
 import org.nimio.app.feature.status.domain.UserStatus
+import org.nimio.app.feature.status.domain.VisibilityTier
 import org.nimio.app.feature.status.sync.StatusExpiryScheduler
 
 class StatusViewModel(
@@ -23,12 +24,17 @@ class StatusViewModel(
 
     init {
         viewModelScope.launch {
+            runCatching { repository.refreshStatus() }
+        }
+
+        viewModelScope.launch {
             repository.observeStatus().collect { status ->
                 _uiState.update {
                     it.copy(
                         selectedAvailability = status.availability,
                         activityText = status.activity,
                         noteText = status.note,
+                        selectedVisibilityTier = status.visibilityTier,
                         lastUpdatedEpochMillis = status.updatedAtEpochMillis,
                         expiresAtEpochMillis = status.expiresAtEpochMillis,
                         isSaving = false,
@@ -55,6 +61,10 @@ class StatusViewModel(
         _uiState.update { it.copy(selectedExpiry = expiry) }
     }
 
+    fun onVisibilityTierSelected(tier: VisibilityTier) {
+        _uiState.update { it.copy(selectedVisibilityTier = tier) }
+    }
+
     fun saveStatus() {
         val current = _uiState.value
         _uiState.update { it.copy(isSaving = true) }
@@ -79,6 +89,7 @@ class StatusViewModel(
                         availability = current.selectedAvailability,
                         activity = current.activityText.trim(),
                         note = current.noteText.trim(),
+                        visibilityTier = current.selectedVisibilityTier,
                         updatedAtEpochMillis = now,
                         expiresAtEpochMillis = expiresAt
                     )

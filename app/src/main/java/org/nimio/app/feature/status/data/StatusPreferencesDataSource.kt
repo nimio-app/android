@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import org.nimio.app.feature.status.domain.Availability
 import org.nimio.app.feature.status.domain.UserStatus
+import org.nimio.app.feature.status.domain.VisibilityTier
 import java.io.IOException
 
 private const val STATUS_DATASTORE_NAME = "nimio_status"
@@ -25,6 +26,7 @@ private object StatusPreferencesKeys {
     val updatedAt = longPreferencesKey("updated_at")
     val note = stringPreferencesKey("note")
     val expiresAt = longPreferencesKey("expires_at")
+    val visibilityTier = stringPreferencesKey("visibility_tier")
 }
 
 class StatusPreferencesDataSource(
@@ -49,6 +51,9 @@ class StatusPreferencesDataSource(
                         ?: Availability.FREE,
                     activity = preferences[StatusPreferencesKeys.activity].orEmpty(),
                     note = preferences[StatusPreferencesKeys.note].orEmpty(),
+                    visibilityTier = preferences[StatusPreferencesKeys.visibilityTier]
+                        ?.let { value -> runCatching { VisibilityTier.valueOf(value) }.getOrNull() }
+                        ?: VisibilityTier.ALL_CONNECTIONS,
                     updatedAtEpochMillis = preferences[StatusPreferencesKeys.updatedAt],
                     expiresAtEpochMillis = preferences[StatusPreferencesKeys.expiresAt]
                 )
@@ -63,6 +68,7 @@ class StatusPreferencesDataSource(
                 preferences[StatusPreferencesKeys.updatedAt] = it
             }
             preferences[StatusPreferencesKeys.note] = status.note
+            preferences[StatusPreferencesKeys.visibilityTier] = status.visibilityTier.name
             if (status.expiresAtEpochMillis != null) {
                 preferences[StatusPreferencesKeys.expiresAt] = status.expiresAtEpochMillis
             } else {

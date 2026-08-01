@@ -5,5 +5,7 @@ import kotlinx.coroutines.flow.Flow
 interface StatusRepository {
     fun observeStatus(): Flow<UserStatus>
     suspend fun saveStatus(status: UserStatus)
+    suspend fun refreshStatus()
+    suspend fun clearStatus()
 }
 

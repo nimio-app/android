@@ -12,6 +12,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import org.nimio.app.core.network.AuthInterceptor
 import org.nimio.app.feature.account.data.AccountApi
+import org.nimio.app.feature.status.data.StatusApi
+import org.nimio.app.feature.social.data.SocialApi
 
 private const val NIMIO_BASE_URL = "https://api.nimio.org/"
 
@@ -52,6 +54,18 @@ object NetworkModule {
     @Singleton
     fun provideAccountApi(retrofit: Retrofit): AccountApi {
         return retrofit.create(AccountApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSocialApi(retrofit: Retrofit): SocialApi {
+        return retrofit.create(SocialApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideStatusApi(retrofit: Retrofit): StatusApi {
+        return retrofit.create(StatusApi::class.java)
     }
 }
 

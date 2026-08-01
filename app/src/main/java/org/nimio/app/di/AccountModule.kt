@@ -12,6 +12,11 @@ import org.nimio.app.feature.account.data.ProfilePreferencesDataSource
 import org.nimio.app.feature.account.data.RemoteAccountRepository
 import org.nimio.app.feature.account.domain.AccountRepository
 import org.nimio.app.feature.account.domain.LocalProfileRepository
+import org.nimio.app.feature.status.data.RemoteStatusRepository
+import org.nimio.app.feature.status.data.StatusPreferencesDataSource
+import org.nimio.app.feature.status.domain.StatusRepository
+import org.nimio.app.feature.social.data.RemoteSocialGraphRepository
+import org.nimio.app.feature.social.domain.SocialGraphRepository
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -38,6 +43,30 @@ object AccountModule {
     fun provideAccountRepository(
         repository: RemoteAccountRepository
     ): AccountRepository {
+        return repository
+    }
+
+    @Provides
+    @Singleton
+    fun provideSocialGraphRepository(
+        repository: RemoteSocialGraphRepository
+    ): SocialGraphRepository {
+        return repository
+    }
+
+    @Provides
+    @Singleton
+    fun provideStatusPreferencesDataSource(
+        @ApplicationContext context: Context
+    ): StatusPreferencesDataSource {
+        return StatusPreferencesDataSource(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideStatusRepository(
+        repository: RemoteStatusRepository
+    ): StatusRepository {
         return repository
     }
 }

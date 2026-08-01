@@ -14,6 +14,8 @@
     <string name="status_note_placeholder">Deep in a project, back around 5pm ❤️</string>
     <string name="status_expiry_title">Status expires</string>
     <string name="status_expiry_description">Let Nimio clear your status automatically when the moment passes.</string>
+    <string name="status_visibility_title">Visibility</string>
+    <string name="status_visibility_description">Choose who can see this status update.</string>
     <string name="status_saved">✓ Saved!</string>
 
     <string name="availability_free">Free to chat</string>

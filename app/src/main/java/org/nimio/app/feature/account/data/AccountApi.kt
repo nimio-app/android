@@ -4,6 +4,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.DELETE
+import retrofit2.http.PUT
 import retrofit2.http.Query
 import retrofit2.http.Multipart
 import retrofit2.http.Part
@@ -42,6 +43,11 @@ interface AccountApi {
 
     @GET("v1/me/profile")
     suspend fun getMyProfile(): ApiEnvelope<ProfilePayloadDto>
+
+    @PUT("v1/me/profile")
+    suspend fun updateMyProfile(
+        @Body request: UpdateProfileRequestDto
+    ): ApiEnvelope<ProfilePayloadDto>
 
     @Multipart
     @POST("v1/me/avatar")

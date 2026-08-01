@@ -34,7 +34,10 @@ class AuthInterceptor @Inject constructor(
     }
 
     private fun requiresAuthorization(path: String): Boolean {
-        return path.startsWith("/v1/me/") || path.startsWith("/v1/feed/")
+        return path.startsWith("/v1/me") ||
+            path.startsWith("/v1/feed/") ||
+            path.startsWith("/v1/connections") ||
+            path.startsWith("/v1/users/")
     }
 }
 
