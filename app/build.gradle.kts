@@ -72,6 +72,9 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)

@@ -17,6 +17,8 @@ interface AccountRepository {
         password: String
     ): NimioResult<AccountSession>
 
+    suspend fun googleSignIn(idToken: String): NimioResult<AccountSession>
+
     suspend fun resendVerification(email: String): NimioResult<Unit>
 
     suspend fun verifyEmailToken(token: String): NimioResult<Unit>

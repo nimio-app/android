@@ -7,6 +7,7 @@ data class AuthUiState(
     val username: String = "",
     val displayName: String = "",
     val isSubmitting: Boolean = false,
+    val isGoogleSigningIn: Boolean = false,
     val errorMessage: String? = null
 ) {
     val canSubmit: Boolean

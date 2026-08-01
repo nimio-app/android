@@ -40,6 +40,16 @@ class InMemoryAccountRepository : AccountRepository {
         return NimioResult.Success(newSession)
     }
 
+    override suspend fun googleSignIn(idToken: String): NimioResult<AccountSession> {
+        val newSession = AccountSession(
+            userId = "google_user",
+            displayName = "Google User",
+            isSignedIn = true
+        )
+        session.value = newSession
+        return NimioResult.Success(newSession)
+    }
+
     override suspend fun resendVerification(email: String): NimioResult<Unit> {
         return NimioResult.Success(Unit)
     }

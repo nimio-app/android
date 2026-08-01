@@ -53,6 +53,11 @@ data class AvatarUploadResponseDto(
 )
 
 @Serializable
+data class GoogleSignInRequestDto(
+    @SerialName("id_token") val idToken: String
+)
+
+@Serializable
 data class AuthPayloadDto(
     val user: UserDto,
     val profile: ProfileDto,

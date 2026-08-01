@@ -20,6 +20,11 @@ interface AccountApi {
         @Body request: LoginRequestDto
     ): ApiEnvelope<AuthPayloadDto>
 
+    @POST("v1/auth/google")
+    suspend fun googleSignIn(
+        @Body request: GoogleSignInRequestDto
+    ): ApiEnvelope<AuthPayloadDto>
+
     @POST("v1/auth/resend-verification")
     suspend fun resendVerification(
         @Body request: ResendVerificationRequestDto

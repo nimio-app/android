@@ -120,6 +120,10 @@ class AuthViewModelTest {
             return loginResult
         }
 
+        override suspend fun googleSignIn(idToken: String): NimioResult<AccountSession> {
+            return loginResult
+        }
+
         override suspend fun resendVerification(email: String): NimioResult<Unit> {
             return NimioResult.Success(Unit)
         }

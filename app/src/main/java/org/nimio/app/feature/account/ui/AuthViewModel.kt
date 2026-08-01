@@ -78,6 +78,52 @@ class AuthViewModel(
             }
         }
     }
+
+    fun googleSignIn(idToken: String) {
+        _uiState.update { it.copy(isGoogleSigningIn = true, errorMessage = null) }
+
+        viewModelScope.launch {
+            val result = accountRepository.googleSignIn(idToken)
+            _uiState.update { state ->
+                when (result) {
+                    is NimioResult.Success -> state.copy(
+                        isGoogleSigningIn = false,
+                        errorMessage = null
+                    )
+                    is NimioResult.Error -> state.copy(
+                        isGoogleSigningIn = false,
+                        errorMessage = result.throwable.message ?: "Google sign-in failed."
+                    )
+                }
+            }
+        }
+    }
+
+    fun onGoogleSignInStarted() {
+        _uiState.update {
+            it.copy(
+                isGoogleSigningIn = true,
+                errorMessage = null
+            )
+        }
+    }
+
+    fun onGoogleSignInCancelled() {
+        _uiState.update {
+            it.copy(
+                isGoogleSigningIn = false
+            )
+        }
+    }
+
+    fun onGoogleSignInError(message: String) {
+        _uiState.update {
+            it.copy(
+                isGoogleSigningIn = false,
+                errorMessage = message
+            )
+        }
+    }
 }
 
 class AuthViewModelFactory(

@@ -92,6 +92,22 @@ class RemoteAccountRepository @Inject constructor(
         )
     }
 
+    override suspend fun googleSignIn(idToken: String): NimioResult<AccountSession> {
+        return runCatching {
+            val response = accountApi.googleSignIn(
+                GoogleSignInRequestDto(idToken = idToken.trim())
+            )
+            val payload = response.requireData()
+            val existing = profileDataSource.observeProfile().first()
+            authTokenDataSource.setToken(payload.token)
+            saveMergedProfile(existing = existing, payload = payload)
+            payload.toAccountSession()
+        }.fold(
+            onSuccess = { NimioResult.Success(it) },
+            onFailure = { NimioResult.Error(it.toUserFacingAuthError(json)) }
+        )
+    }
+
     override suspend fun resendVerification(email: String): NimioResult<Unit> {
         return runCatching {
             accountApi.resendVerification(

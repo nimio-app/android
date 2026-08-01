@@ -68,6 +68,10 @@
     <string name="auth_username_label">Username</string>
     <string name="auth_username_placeholder">e.g. lakky</string>
     <string name="auth_working">Talking to Nimio…</string>
+    <string name="auth_google_sign_in">Sign in with Google</string>
+    <string name="auth_google_continue">Continue with Google</string>
+    <string name="auth_google_signing_in">Signing in with Google…</string>
+    <string name="google_web_client_id">583439352204-q350obflueeuv08e2ism8essb8o013jn.apps.googleusercontent.com</string>
     <string name="verification_banner_title">Verify your email</string>
     <string name="verification_banner_subtitle">Tap the link sent to %1$s to finish setup.</string>
     <string name="verification_banner_resend">Resend Email</string>

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -26,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -36,12 +39,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.nimio.app.R
+import org.nimio.app.core.common.GoogleSignInResult
+import org.nimio.app.core.common.signInWithGoogle
 import org.nimio.app.feature.account.domain.AccountRepository
 
 @Composable
 fun AuthScreen(
     accountRepository: AccountRepository
 ) {
+    val context = LocalContext.current
     val factory = remember(accountRepository) {
         AuthViewModelFactory(accountRepository)
     }
@@ -177,9 +183,70 @@ fun AuthScreen(
                         )
                     }
 
+                    GoogleSignInButton(
+                        enabled = !uiState.isGoogleSigningIn && !uiState.isSubmitting,
+                        isLoading = uiState.isGoogleSigningIn,
+                        onClick = {
+                            val webClientId = context.getString(R.string.google_web_client_id)
+                            val activity = context as? androidx.activity.ComponentActivity
+                            if (activity == null) {
+                                viewModel.onGoogleSignInError("Google sign-in is unavailable in this screen.")
+                                return@GoogleSignInButton
+                            }
+
+                            viewModel.onGoogleSignInStarted()
+                            signInWithGoogle(activity, webClientId) { result ->
+                                when (result) {
+                                    is GoogleSignInResult.Success -> viewModel.googleSignIn(result.idToken)
+                                    is GoogleSignInResult.Cancelled -> viewModel.onGoogleSignInCancelled()
+                                    is GoogleSignInResult.Error -> viewModel.onGoogleSignInError(
+                                        result.exception.message ?: "Google sign-in failed."
+                                    )
+                                }
+                            }
+                        }
+                    )
+
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun GoogleSignInButton(
+    enabled: Boolean,
+    isLoading: Boolean,
+    onClick: () -> Unit
+) {
+    OutlinedButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(52.dp),
+        shape = RoundedCornerShape(14.dp)
+    ) {
+        if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                Text(text = stringResource(id = R.string.auth_google_signing_in))
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_google_g),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                Text(
+                    text = stringResource(id = R.string.auth_google_sign_in),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
     }
 }
 
