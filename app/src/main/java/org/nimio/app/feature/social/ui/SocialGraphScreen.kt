@@ -17,10 +17,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -50,7 +51,6 @@ import org.nimio.app.R
 import org.nimio.app.feature.social.data.InMemorySocialGraphRepository
 import org.nimio.app.feature.social.domain.ConnectionStatus
 import org.nimio.app.feature.social.domain.ConnectionTier
-import org.nimio.app.feature.social.domain.PendingActionHint
 import org.nimio.app.feature.social.domain.SocialGraphRepository
 import org.nimio.app.feature.social.domain.UserSearchResult
 
@@ -76,10 +76,18 @@ fun SocialGraphScreen(
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = "${uiState.count} connections",
+            text = stringResource(id = R.string.social_connections_count, uiState.count),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+        Text(
+            text = stringResource(id = R.string.social_directional_hint),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 4.dp)
+        )
+
+        TierLegend()
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -96,7 +104,7 @@ fun SocialGraphScreen(
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Search or add people…") },
+            placeholder = { Text(stringResource(id = R.string.social_search_placeholder)) },
             leadingIcon = {
                 if (uiState.isSearchingUsers) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
@@ -128,7 +136,7 @@ fun SocialGraphScreen(
                 if (uiState.searchResults.isNotEmpty()) {
                     item {
                         Text(
-                            text = "People",
+                            text = stringResource(id = R.string.social_people_title),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(vertical = 8.dp)
@@ -150,7 +158,7 @@ fun SocialGraphScreen(
                 } else if (!uiState.isSearchingUsers) {
                     item {
                         Text(
-                            text = "No people found for \"$query\"",
+                            text = stringResource(id = R.string.social_search_empty, query),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(vertical = 12.dp)
@@ -166,7 +174,7 @@ fun SocialGraphScreen(
                 val pendingTotal = incomingPending.size + outgoingPending.size
                 item {
                     Text(
-                        text = "Requests ($pendingTotal)",
+                        text = stringResource(id = R.string.social_requests_count, pendingTotal),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(vertical = 8.dp)
@@ -175,7 +183,7 @@ fun SocialGraphScreen(
                 if (incomingPending.isNotEmpty()) {
                     item {
                         Text(
-                            text = "Incoming (${incomingPending.size})",
+                            text = stringResource(id = R.string.social_incoming_count, incomingPending.size),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 6.dp)
@@ -195,14 +203,14 @@ fun SocialGraphScreen(
                                 ) {
                                     Icon(
                                         Icons.Default.Check,
-                                        contentDescription = "Accept",
+                                        contentDescription = stringResource(id = R.string.social_action_accept_content_description),
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
                                 TextButton(
                                     onClick = { viewModel.reject(item.counterpartUserId) },
                                     enabled = !uiState.isSubmitting
-                                ) { Text("Decline") }
+                                ) { Text(stringResource(id = R.string.social_decline)) }
                             }
                         }
                     )
@@ -212,7 +220,7 @@ fun SocialGraphScreen(
                 if (outgoingPending.isNotEmpty()) {
                     item {
                         Text(
-                            text = "Sent (${outgoingPending.size})",
+                            text = stringResource(id = R.string.social_sent_count, outgoingPending.size),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 10.dp, bottom = 6.dp)
@@ -227,14 +235,14 @@ fun SocialGraphScreen(
                         trailing = {
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                                 StatusBadge(
-                                    label = "Sent",
+                                    label = stringResource(id = R.string.social_badge_sent),
                                     container = MaterialTheme.colorScheme.secondaryContainer,
                                     content = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                                 TextButton(
                                     onClick = { viewModel.remove(item.counterpartUserId) },
                                     enabled = !uiState.isSubmitting
-                                ) { Text("Cancel") }
+                                ) { Text(stringResource(id = R.string.social_cancel)) }
                             }
                         }
                     )
@@ -247,7 +255,7 @@ fun SocialGraphScreen(
             if (acceptedList.isNotEmpty()) {
                 item {
                     Text(
-                        text = "Connections",
+                        text = stringResource(id = R.string.social_people_title),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(vertical = 8.dp)
@@ -258,11 +266,28 @@ fun SocialGraphScreen(
                         title = item.displayName.ifBlank { item.username },
                         username = item.username,
                         avatarUrl = item.avatarUrl,
+                        myTierForThem = item.myTierForThem,
+                        theirTierForMe = item.theirTierForMe,
                         trailing = {
-                            OutlinedButton(
-                                onClick = { viewModel.remove(item.counterpartUserId) },
-                                enabled = !uiState.isSubmitting
-                            ) { Text("Remove") }
+                            Column(
+                                horizontalAlignment = Alignment.End,
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    ConnectionTier.entries.forEach { tier ->
+                                        FilterChip(
+                                            selected = item.myTierForThem == tier,
+                                            onClick = { viewModel.updateTier(item.id, tier) },
+                                            label = { Text(tier.displayLabel) },
+                                            enabled = !uiState.isSubmitting
+                                        )
+                                    }
+                                }
+                                OutlinedButton(
+                                    onClick = { viewModel.remove(item.counterpartUserId) },
+                                    enabled = !uiState.isSubmitting
+                                ) { Text(stringResource(id = R.string.social_remove)) }
+                            }
                         }
                     )
                     HorizontalDivider(modifier = Modifier.padding(start = 56.dp))
@@ -286,7 +311,7 @@ fun SocialGraphScreen(
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = "Search for people above to add friends",
+                                text = stringResource(id = R.string.social_empty_state_hint),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -294,6 +319,56 @@ fun SocialGraphScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun TierLegend() {
+    Row(
+        modifier = Modifier.padding(top = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TierLegendChip(
+            icon = Icons.Default.Groups,
+            label = stringResource(id = R.string.social_tier_all),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        TierLegendChip(
+            icon = Icons.Default.Star,
+            label = stringResource(id = R.string.social_tier_circle),
+            tint = MaterialTheme.colorScheme.primary
+        )
+    }
+}
+
+@Composable
+private fun TierLegendChip(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    tint: androidx.compose.ui.graphics.Color
+) {
+    Surface(
+        shape = RoundedCornerShape(10.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = tint,
+                modifier = Modifier.size(14.dp)
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
         }
     }
 }
@@ -357,9 +432,9 @@ private fun SearchPersonRow(
                 Text("@${result.username}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             when (existingStatus) {
-                ConnectionStatus.PENDING -> StatusBadge("Pending", MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer)
-                ConnectionStatus.ACCEPTED -> StatusBadge("Connected", MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.onTertiaryContainer)
-                ConnectionStatus.BLOCKED -> StatusBadge("Blocked", MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer)
+                ConnectionStatus.PENDING -> StatusBadge(stringResource(id = R.string.social_badge_pending), MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer)
+                ConnectionStatus.ACCEPTED -> StatusBadge(stringResource(id = R.string.social_badge_connected), MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.onTertiaryContainer)
+                ConnectionStatus.BLOCKED -> StatusBadge(stringResource(id = R.string.social_badge_blocked), MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer)
                 else -> {
                     if (!showTierPicker) {
                         androidx.compose.material3.FilledTonalButton(
@@ -368,7 +443,7 @@ private fun SearchPersonRow(
                         ) {
                             Icon(Icons.Default.PersonAdd, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.size(4.dp))
-                            Text("Add")
+                            Text(stringResource(id = R.string.social_add))
                         }
                     }
                 }
@@ -396,7 +471,13 @@ private fun SearchPersonRow(
                     },
                     enabled = !isSubmitting
                 ) {
-                    Text(if (isSubmitting) "…" else "Send")
+                    Text(
+                        text = if (isSubmitting) {
+                            stringResource(id = R.string.social_sending_short)
+                        } else {
+                            stringResource(id = R.string.social_send)
+                        }
+                    )
                 }
             }
         }
@@ -410,6 +491,8 @@ private fun ConnectionPersonRow(
     title: String,
     username: String,
     avatarUrl: String?,
+    myTierForThem: ConnectionTier? = null,
+    theirTierForMe: ConnectionTier? = null,
     trailing: @Composable () -> Unit
 ) {
     Row(
@@ -421,8 +504,58 @@ private fun ConnectionPersonRow(
         Column(modifier = Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
             Text("@$username", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (myTierForThem != null && theirTierForMe != null) {
+                Row(
+                    modifier = Modifier.padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TierDirectionBadge(label = stringResource(id = R.string.social_tier_you), tier = myTierForThem)
+                    TierDirectionBadge(label = stringResource(id = R.string.social_tier_them), tier = theirTierForMe)
+                }
+            }
         }
         trailing()
+    }
+}
+
+@Composable
+private fun TierDirectionBadge(
+    label: String,
+    tier: ConnectionTier
+) {
+    val icon = if (tier == ConnectionTier.CIRCLE) Icons.Default.Star else Icons.Default.Groups
+    val tint = if (tier == ConnectionTier.CIRCLE) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Surface(
+        shape = RoundedCornerShape(8.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "$label:",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = tint,
+                modifier = Modifier.size(14.dp)
+            )
+            Text(
+                text = tier.displayLabel,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
     }
 }
 

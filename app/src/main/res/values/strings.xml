@@ -14,8 +14,8 @@
     <string name="status_note_placeholder">Deep in a project, back around 5pm ❤️</string>
     <string name="status_expiry_title">Status expires</string>
     <string name="status_expiry_description">Let Nimio clear your status automatically when the moment passes.</string>
-    <string name="status_visibility_title">Visibility</string>
-    <string name="status_visibility_description">Choose who can see this status update.</string>
+    <string name="status_visibility_title">Who can see this status?</string>
+    <string name="status_visibility_description">All is visible to all connections. Circle is visible only to people you marked as Circle.</string>
     <string name="status_saved">✓ Saved!</string>
 
     <string name="availability_free">Free to chat</string>
@@ -25,7 +25,32 @@
     <string name="availability_resting">Taking a break</string>
 
     <string name="social_screen_title">Loved Ones</string>
-    <string name="social_screen_description">Manage your close circle and who can see each status update.</string>
+    <string name="social_screen_description">Manage connections and set who belongs in your Circle.</string>
+    <string name="social_connections_count">%1$d connections</string>
+    <string name="social_directional_hint">You can set each person to All or Circle independently.</string>
+    <string name="social_search_placeholder">Search or add people…</string>
+    <string name="social_people_title">People</string>
+    <string name="social_search_empty">No people found for "%1$s"</string>
+    <string name="social_requests_count">Requests (%1$d)</string>
+    <string name="social_incoming_count">Incoming (%1$d)</string>
+    <string name="social_sent_count">Sent (%1$d)</string>
+    <string name="social_accept">Accept</string>
+    <string name="social_decline">Decline</string>
+    <string name="social_cancel">Cancel</string>
+    <string name="social_remove">Remove</string>
+    <string name="social_add">Add</string>
+    <string name="social_send">Send</string>
+    <string name="social_sending_short">…</string>
+    <string name="social_badge_sent">Sent</string>
+    <string name="social_badge_pending">Pending</string>
+    <string name="social_badge_connected">Connected</string>
+    <string name="social_badge_blocked">Blocked</string>
+    <string name="social_tier_all">All</string>
+    <string name="social_tier_circle">Circle</string>
+    <string name="social_tier_you">You</string>
+    <string name="social_tier_them">Them</string>
+    <string name="social_action_accept_content_description">Accept request</string>
+    <string name="social_empty_state_hint">Search for people above to add friends</string>
 
     <string name="account_screen_title">Account</string>
     <string name="account_screen_description">Sign-in, profile identity, and account preferences will be managed here.</string>
@@ -84,8 +109,8 @@
     <string name="verification_failed">Could not verify this email link.</string>
     <string name="verification_link_invalid">This verification link is invalid.</string>
 
-    <string name="social_circles_title">Circles</string>
-    <string name="social_circles_description">Friends, teammates, and family groups will define who sees each status.</string>
+    <string name="social_circles_title">Circle</string>
+    <string name="social_circles_description">People you mark as Circle can see your Circle-only updates.</string>
     <string name="social_requests_title">Connection Requests</string>
     <string name="social_requests_description">Pending invites and approvals will appear here once account sync is enabled.</string>
 

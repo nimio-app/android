@@ -8,17 +8,12 @@ enum class ConnectionTier(
     ALL(
         apiValue = "ALL",
         displayLabel = "All",
-        description = "Can see all your statuses"
+        description = "Default connection tier"
     ),
     CIRCLE(
         apiValue = "CIRCLE",
         displayLabel = "Circle",
-        description = "Can see Circle-only and public statuses"
-    ),
-    MUTUAL(
-        apiValue = "MUTUAL",
-        displayLabel = "Mutual",
-        description = "Standard friend connection"
+        description = "Can see your Circle-only statuses"
     )
 }
 

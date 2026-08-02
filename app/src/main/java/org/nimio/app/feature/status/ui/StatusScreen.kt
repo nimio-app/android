@@ -68,6 +68,12 @@ fun StatusScreen(
         // Current state summary header
         CurrentStatusSummary(uiState = uiState)
 
+        // Quick top tabs for who can see this status.
+        StatusVisibilityTabs(
+            selected = uiState.selectedVisibilityTier,
+            onSelected = viewModel::onVisibilityTierSelected
+        )
+
         NimioSectionCard {
             NimioSectionHeader(
                 title = stringResource(id = R.string.status_section_feeling_title),
@@ -106,17 +112,6 @@ fun StatusScreen(
             )
         }
 
-        NimioSectionCard {
-            NimioSectionHeader(
-                title = stringResource(id = R.string.status_visibility_title),
-                description = stringResource(id = R.string.status_visibility_description)
-            )
-            VisibilityTierSelector(
-                selected = uiState.selectedVisibilityTier,
-                onSelected = viewModel::onVisibilityTierSelected
-            )
-        }
-
         ElevatedButton(
             onClick = viewModel::saveStatus,
             enabled = !uiState.isSaving,
@@ -138,6 +133,31 @@ fun StatusScreen(
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold
             )
+        }
+    }
+}
+
+@Composable
+private fun StatusVisibilityTabs(
+    selected: VisibilityTier,
+    onSelected: (VisibilityTier) -> Unit
+) {
+    NimioSectionCard {
+        NimioSectionHeader(
+            title = stringResource(id = R.string.status_visibility_title),
+            description = stringResource(id = R.string.status_visibility_description)
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            VisibilityTier.entries.forEach { tier ->
+                FilterChip(
+                    selected = tier == selected,
+                    onClick = { onSelected(tier) },
+                    label = { Text(text = tier.displayLabel) }
+                )
+            }
         }
     }
 }
@@ -279,26 +299,5 @@ private fun ExpirySelector(
     }
 }
 
-@Composable
-private fun VisibilityTierSelector(
-    selected: VisibilityTier,
-    onSelected: (VisibilityTier) -> Unit
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        VisibilityTier.entries.forEach { tier ->
-            FilterChip(
-                selected = tier == selected,
-                onClick = { onSelected(tier) },
-                label = { Text(text = tier.displayLabel) },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Text(
-                text = tier.description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
-            )
-        }
-    }
-}
+// ...existing code...
 

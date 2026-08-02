@@ -6,6 +6,8 @@ data class ConnectionSummary(
     val friendId: String,
     val counterpartUserId: String,
     val relationshipTier: ConnectionTier,
+    val myTierForThem: ConnectionTier = relationshipTier,
+    val theirTierForMe: ConnectionTier = ConnectionTier.ALL,
     val status: ConnectionStatus,
     val createdAt: String? = null,
     val updatedAt: String? = null,

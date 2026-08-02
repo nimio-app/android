@@ -43,7 +43,7 @@ class InMemorySocialGraphRepository : SocialGraphRepository {
     }
 
     override suspend fun updateRelationshipTier(
-        friendId: String,
+        connectionId: String,
         relationshipTier: ConnectionTier
     ): NimioResult<ConnectionActionResult> {
         return NimioResult.Error(IllegalStateException("Not available in in-memory mode"))

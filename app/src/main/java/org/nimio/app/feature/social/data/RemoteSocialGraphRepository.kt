@@ -5,10 +5,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.nimio.app.core.common.NimioResult
-import org.nimio.app.core.network.AuthTokenDataSource
 import org.nimio.app.feature.account.data.ApiEnvelope
 import org.nimio.app.feature.account.data.ApiFailureEnvelope
 import org.nimio.app.feature.account.domain.LocalProfileRepository
@@ -24,7 +23,6 @@ import javax.inject.Inject
 
 class RemoteSocialGraphRepository @Inject constructor(
     private val socialApi: SocialApi,
-    private val authTokenDataSource: AuthTokenDataSource,
     private val localProfileRepository: LocalProfileRepository,
     private val json: Json
 ) : SocialGraphRepository {
@@ -108,14 +106,14 @@ class RemoteSocialGraphRepository @Inject constructor(
     }
 
     override suspend fun updateRelationshipTier(
-        friendId: String,
+        connectionId: String,
         relationshipTier: ConnectionTier
     ): NimioResult<ConnectionActionResult> {
         return runCatching {
             val currentUserId = localProfileRepository.observeProfile().first().userId.trim()
             val response = socialApi.updateRelationshipTier(
+                connectionId = connectionId,
                 UpdateRelationshipTierRequestDto(
-                    friendId = friendId,
                     relationshipTier = relationshipTier.apiValue
                 )
             )
@@ -198,12 +196,15 @@ class RemoteSocialGraphRepository @Inject constructor(
 
     private fun ConnectionDto.toDomain(currentUserId: String): ConnectionSummary {
         val counterpart = deriveCounterpartUserId(currentUserId)
+        val normalizedTier = relationshipTier.toConnectionTier()
         return ConnectionSummary(
             id = id,
             userId = userId,
             friendId = friendId,
             counterpartUserId = counterpart,
-            relationshipTier = runCatching { ConnectionTier.valueOf(relationshipTier) }.getOrDefault(ConnectionTier.MUTUAL),
+            relationshipTier = normalizedTier,
+            myTierForThem = normalizedTier,
+            theirTierForMe = ConnectionTier.ALL,
             status = runCatching { ConnectionStatus.valueOf(status) }.getOrDefault(ConnectionStatus.NONE),
             createdAt = createdAt,
             updatedAt = updatedAt,
@@ -223,11 +224,19 @@ class RemoteSocialGraphRepository @Inject constructor(
             friendId = counterpart,
             counterpartUserId = counterpart,
             initiatedByMe = initiatedByMe,
+            myTierForThem = myTierForThem.toConnectionTier(),
+            theirTierForMe = theirTierForMe.toConnectionTier(),
             pendingActionHint = actionHint,
             username = profile.username,
             displayName = profile.displayName,
             avatarUrl = profile.avatarUrl
         )
+    }
+
+    private fun String?.toConnectionTier(): ConnectionTier {
+        val normalized = this?.trim()?.uppercase().orEmpty()
+        if (normalized == "MUTUAL") return ConnectionTier.ALL
+        return runCatching { ConnectionTier.valueOf(normalized) }.getOrDefault(ConnectionTier.ALL)
     }
 
     private fun ConnectionDto.deriveCounterpartUserId(currentUserId: String): String {

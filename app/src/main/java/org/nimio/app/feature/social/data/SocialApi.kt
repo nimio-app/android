@@ -32,8 +32,9 @@ interface SocialApi {
         @Body request: BlockConnectionRequestDto
     ): ApiEnvelope<ConnectionActionPayloadDto>
 
-    @PUT("v1/connections/tier")
+    @PUT("v1/connections/{connectionId}/tier")
     suspend fun updateRelationshipTier(
+        @Path("connectionId") connectionId: String,
         @Body request: UpdateRelationshipTierRequestDto
     ): ApiEnvelope<ConnectionActionPayloadDto>
 
@@ -62,7 +63,7 @@ interface SocialApi {
 @Serializable
 data class ConnectionRequestDto(
     @SerialName("to_user_id") val toUserId: String,
-    @SerialName("relationship_tier") val relationshipTier: String = "MUTUAL"
+    @SerialName("relationship_tier") val relationshipTier: String = "ALL"
 )
 
 @Serializable
@@ -82,7 +83,6 @@ data class BlockConnectionRequestDto(
 
 @Serializable
 data class UpdateRelationshipTierRequestDto(
-    @SerialName("friend_id") val friendId: String,
     @SerialName("relationship_tier") val relationshipTier: String
 )
 
@@ -109,6 +109,8 @@ data class ConnectionItemDto(
     val profile: SocialProfileDto,
     @SerialName("initiated_by_me") val initiatedByMe: Boolean = false,
     @SerialName("counterpart_user_id") val counterpartUserId: String? = null,
+    @SerialName("my_tier_for_them") val myTierForThem: String? = null,
+    @SerialName("their_tier_for_me") val theirTierForMe: String? = null,
     @SerialName("pending_action_hint") val pendingActionHint: String? = null
 )
 

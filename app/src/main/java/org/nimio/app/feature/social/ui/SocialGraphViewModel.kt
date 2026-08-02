@@ -32,7 +32,7 @@ data class SocialGraphUiState(
     val searchErrorMessage: String? = null,
     val pendingOutgoingUserIds: Set<String> = emptySet(),
     val searchQuery: String = "",
-    val relationshipTier: ConnectionTier = ConnectionTier.MUTUAL,
+    val relationshipTier: ConnectionTier = ConnectionTier.ALL,
     val statusFilter: ConnectionStatus? = null
 ) {
     val pendingRequests: List<ConnectionSummary>
@@ -60,7 +60,7 @@ data class SocialGraphUiState(
             return connections.filter { item ->
                 item.displayName.lowercase().contains(query) ||
                     item.username.lowercase().contains(query) ||
-                    item.friendId.lowercase().contains(query)
+                    item.counterpartUserId.lowercase().contains(query)
             }
         }
 
@@ -212,8 +212,8 @@ class SocialGraphViewModel(
         submitAction { repository.blockUser(userId) }
     }
 
-    fun updateTier(friendId: String, tier: ConnectionTier) {
-        submitAction { repository.updateRelationshipTier(friendId, tier) }
+    fun updateTier(connectionId: String, tier: ConnectionTier) {
+        submitAction { repository.updateRelationshipTier(connectionId, tier) }
     }
 
     fun remove(friendId: String) {

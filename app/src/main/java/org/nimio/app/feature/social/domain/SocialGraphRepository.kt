@@ -14,7 +14,7 @@ interface SocialGraphRepository {
 
     suspend fun requestConnection(
         toUserId: String,
-        relationshipTier: ConnectionTier = ConnectionTier.MUTUAL
+        relationshipTier: ConnectionTier = ConnectionTier.ALL
     ): NimioResult<ConnectionActionResult>
 
     suspend fun acceptConnection(fromUserId: String): NimioResult<ConnectionActionResult>
@@ -24,7 +24,7 @@ interface SocialGraphRepository {
     suspend fun blockUser(userId: String): NimioResult<ConnectionActionResult>
 
     suspend fun updateRelationshipTier(
-        friendId: String,
+        connectionId: String,
         relationshipTier: ConnectionTier
     ): NimioResult<ConnectionActionResult>
 
