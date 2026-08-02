@@ -10,6 +10,7 @@ data class AccountUiState(
     val avatarUri: String? = null,
     val isSaving: Boolean = false,
     val saved: Boolean = false,
+    val errorMessage: String? = null,
     val isSigningOut: Boolean = false
 )
 

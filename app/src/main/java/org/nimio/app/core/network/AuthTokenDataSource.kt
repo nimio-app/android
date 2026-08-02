@@ -20,11 +20,16 @@ private val Context.authDataStore: DataStore<Preferences> by preferencesDataStor
 
 private object AuthPreferencesKeys {
     val accessToken = stringPreferencesKey("access_token")
+    val logoutNotice = stringPreferencesKey("logout_notice")
 }
 
 class AuthTokenDataSource @Inject constructor(
     @ApplicationContext context: Context
 ) {
+    companion object {
+        const val LOGOUT_NOTICE_SESSION_EXPIRED = "session_expired"
+    }
+
     private val dataStore: DataStore<Preferences> = context.authDataStore
 
     fun observeToken() = dataStore.data
@@ -37,8 +42,22 @@ class AuthTokenDataSource @Inject constructor(
         }
         .map { preferences -> preferences[AuthPreferencesKeys.accessToken] }
 
+    fun observeLogoutNotice() = dataStore.data
+        .catch { error ->
+            if (error is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw error
+            }
+        }
+        .map { preferences -> preferences[AuthPreferencesKeys.logoutNotice] }
+
     suspend fun getToken(): String? {
         return observeToken().first()
+    }
+
+    suspend fun getLogoutNotice(): String? {
+        return observeLogoutNotice().first()
     }
 
     suspend fun setToken(token: String) {
@@ -47,10 +66,30 @@ class AuthTokenDataSource @Inject constructor(
         }
     }
 
+    suspend fun setLogoutNotice(notice: String) {
+        dataStore.edit { preferences ->
+            preferences[AuthPreferencesKeys.logoutNotice] = notice
+        }
+    }
+
     suspend fun clearToken() {
         dataStore.edit { preferences ->
             preferences.remove(AuthPreferencesKeys.accessToken)
         }
+    }
+
+    suspend fun clearLogoutNotice() {
+        dataStore.edit { preferences ->
+            preferences.remove(AuthPreferencesKeys.logoutNotice)
+        }
+    }
+
+    suspend fun consumeLogoutNotice(): String? {
+        val notice = getLogoutNotice()
+        if (notice != null) {
+            clearLogoutNotice()
+        }
+        return notice
     }
 }
 

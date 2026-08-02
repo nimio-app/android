@@ -11,13 +11,17 @@ import org.nimio.app.feature.social.domain.ConnectionSummary
 import org.nimio.app.feature.social.domain.ConnectionTier
 import org.nimio.app.feature.social.domain.SocialGraphRepository
 import org.nimio.app.feature.social.domain.UserSearchResult
+import org.nimio.app.feature.social.domain.VisibleStatus
 
 class InMemorySocialGraphRepository : SocialGraphRepository {
     private val connections = MutableStateFlow<List<ConnectionSummary>>(emptyList())
+    private val visibleStatuses = MutableStateFlow<List<VisibleStatus>>(emptyList())
 
     override fun observeConnectionsCount(): Flow<Int> = flowOf(0)
 
     override fun observeConnections(): Flow<List<ConnectionSummary>> = connections.asStateFlow()
+
+    override fun observeVisibleStatuses(): Flow<List<VisibleStatus>> = visibleStatuses.asStateFlow()
 
     override suspend fun refreshConnections(status: ConnectionStatus?): NimioResult<List<ConnectionSummary>> {
         return NimioResult.Success(connections.value)
@@ -59,6 +63,10 @@ class InMemorySocialGraphRepository : SocialGraphRepository {
 
     override suspend fun searchUsers(query: String, limit: Int): NimioResult<List<UserSearchResult>> {
         return NimioResult.Success(emptyList())
+    }
+
+    override suspend fun refreshVisibleStatuses(): NimioResult<List<VisibleStatus>> {
+        return NimioResult.Success(visibleStatuses.value)
     }
 }
 

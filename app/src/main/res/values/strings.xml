@@ -51,6 +51,8 @@
     <string name="social_tier_them">Them</string>
     <string name="social_action_accept_content_description">Accept request</string>
     <string name="social_empty_state_hint">Search for people above to add friends</string>
+    <string name="social_statuses_title">Recent statuses</string>
+    <string name="social_statuses_empty">No visible statuses yet.</string>
 
     <string name="account_screen_title">Account</string>
     <string name="account_screen_description">Sign-in, profile identity, and account preferences will be managed here.</string>
@@ -95,6 +97,8 @@
     <string name="auth_username_label">Username</string>
     <string name="auth_username_placeholder">e.g. lakky</string>
     <string name="auth_working">Talking to Nimio…</string>
+    <string name="auth_notice_title">Session ended</string>
+    <string name="auth_logged_out_session_expired">You’ve been logged out. Please sign in again.</string>
     <string name="auth_google_sign_in">Sign in with Google</string>
     <string name="auth_google_continue">Continue with Google</string>
     <string name="auth_google_signing_in">Signing in with Google…</string>

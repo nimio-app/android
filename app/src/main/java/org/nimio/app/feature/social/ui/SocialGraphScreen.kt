@@ -167,6 +167,40 @@ fun SocialGraphScreen(
                 }
             }
 
+            // ── Visible status feed ──────────────────────────────────────────
+            if (query.length < 2) {
+                item {
+                    Text(
+                        text = stringResource(id = R.string.social_statuses_title),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
+                if (uiState.visibleStatuses.isEmpty()) {
+                    item {
+                        Text(
+                            text = stringResource(id = R.string.social_statuses_empty),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 10.dp)
+                        )
+                    }
+                } else {
+                    items(uiState.visibleStatuses) { status ->
+                        StatusFeedRow(
+                            title = status.displayName.ifBlank { status.username },
+                            username = status.username,
+                            avatarUrl = status.avatarUrl,
+                            availability = status.availabilityType,
+                            note = status.note
+                        )
+                        HorizontalDivider(modifier = Modifier.padding(start = 56.dp))
+                    }
+                }
+            }
+
             // ── Pending requests split by direction ─────────────────────────
             val incomingPending = uiState.incomingPendingRequests
             val outgoingPending = uiState.outgoingPendingRequests
@@ -267,7 +301,6 @@ fun SocialGraphScreen(
                         username = item.username,
                         avatarUrl = item.avatarUrl,
                         myTierForThem = item.myTierForThem,
-                        theirTierForMe = item.theirTierForMe,
                         trailing = {
                             Column(
                                 horizontalAlignment = Alignment.End,
@@ -318,6 +351,33 @@ fun SocialGraphScreen(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatusFeedRow(
+    title: String,
+    username: String,
+    avatarUrl: String?,
+    availability: String,
+    note: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        UserAvatar(avatarUrl = avatarUrl, name = title)
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(text = title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+            Text(text = "@$username", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(text = availability.replace('_', ' '), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+            if (note.isNotBlank()) {
+                Text(text = note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
             }
         }
     }
@@ -492,7 +552,6 @@ private fun ConnectionPersonRow(
     username: String,
     avatarUrl: String?,
     myTierForThem: ConnectionTier? = null,
-    theirTierForMe: ConnectionTier? = null,
     trailing: @Composable () -> Unit
 ) {
     Row(
@@ -504,14 +563,13 @@ private fun ConnectionPersonRow(
         Column(modifier = Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
             Text("@$username", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            if (myTierForThem != null && theirTierForMe != null) {
+            if (myTierForThem != null) {
                 Row(
                     modifier = Modifier.padding(top = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TierDirectionBadge(label = stringResource(id = R.string.social_tier_you), tier = myTierForThem)
-                    TierDirectionBadge(label = stringResource(id = R.string.social_tier_them), tier = theirTierForMe)
                 }
             }
         }

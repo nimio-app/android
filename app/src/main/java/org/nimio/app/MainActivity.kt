@@ -9,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.nimio.app.core.common.NimioResult
+import org.nimio.app.core.network.AuthTokenDataSource
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.nimio.app.feature.account.domain.AccountRepository
@@ -19,6 +20,7 @@ import org.nimio.app.feature.status.domain.StatusRepository
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @Inject lateinit var accountRepository: AccountRepository
+    @Inject lateinit var authTokenDataSource: AuthTokenDataSource
     @Inject lateinit var profileRepository: LocalProfileRepository
     @Inject lateinit var socialGraphRepository: SocialGraphRepository
     @Inject lateinit var statusRepository: StatusRepository
@@ -32,6 +34,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             NimioApp(
                 accountRepository = accountRepository,
+                authTokenDataSource = authTokenDataSource,
                 profileRepository = profileRepository,
                 socialGraphRepository = socialGraphRepository,
                 statusRepository = statusRepository

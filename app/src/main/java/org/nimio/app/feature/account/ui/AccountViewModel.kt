@@ -34,6 +34,7 @@ class AccountViewModel(
                         avatarUri = profile.avatarUri,
                         isSaving = false,
                         saved = false,
+                        errorMessage = null,
                         isSigningOut = false
                     )
                 }
@@ -42,23 +43,23 @@ class AccountViewModel(
     }
 
     fun onDisplayNameChanged(value: String) {
-        _uiState.update { it.copy(displayName = value, saved = false) }
+        _uiState.update { it.copy(displayName = value, saved = false, errorMessage = null) }
     }
 
     fun onUsernameChanged(value: String) {
-        _uiState.update { it.copy(username = value, saved = false) }
+        _uiState.update { it.copy(username = value, saved = false, errorMessage = null) }
     }
 
     fun onBioChanged(value: String) {
-        _uiState.update { it.copy(bio = value, saved = false) }
+        _uiState.update { it.copy(bio = value, saved = false, errorMessage = null) }
     }
 
     fun onAvatarChanged(avatarUri: String?) {
-        _uiState.update { it.copy(avatarUri = avatarUri, saved = false) }
+        _uiState.update { it.copy(avatarUri = avatarUri, saved = false, errorMessage = null) }
     }
 
     fun uploadAvatar(filePath: String) {
-        _uiState.update { it.copy(isSaving = true) }
+        _uiState.update { it.copy(isSaving = true, errorMessage = null) }
         viewModelScope.launch {
             val result = accountRepository.uploadAvatar(filePath)
             when (result) {
@@ -76,17 +77,17 @@ class AccountViewModel(
                             onboardingCompleted = true
                         )
                     )
-                    _uiState.update { it.copy(isSaving = false, saved = true) }
+                    _uiState.update { it.copy(isSaving = false, saved = true, errorMessage = null) }
                 }
                 is NimioResult.Error -> {
-                    _uiState.update { it.copy(isSaving = false) }
+                    _uiState.update { it.copy(isSaving = false, saved = false, errorMessage = result.throwable.message) }
                 }
             }
         }
     }
 
     fun deleteAvatar() {
-        _uiState.update { it.copy(isSaving = true) }
+        _uiState.update { it.copy(isSaving = true, errorMessage = null) }
         viewModelScope.launch {
             val result = accountRepository.deleteAvatar()
             when (result) {
@@ -104,10 +105,10 @@ class AccountViewModel(
                             onboardingCompleted = true
                         )
                     )
-                    _uiState.update { it.copy(isSaving = false, saved = true) }
+                    _uiState.update { it.copy(isSaving = false, saved = true, errorMessage = null) }
                 }
                 is NimioResult.Error -> {
-                    _uiState.update { it.copy(isSaving = false) }
+                    _uiState.update { it.copy(isSaving = false, saved = false, errorMessage = result.throwable.message) }
                 }
             }
         }
@@ -115,15 +116,13 @@ class AccountViewModel(
 
     fun saveProfile() {
         val current = _uiState.value
-        _uiState.update { it.copy(isSaving = true) }
+        _uiState.update { it.copy(isSaving = true, errorMessage = null) }
         viewModelScope.launch {
-            when (
-                accountRepository.updateProfile(
-                    username = current.username,
-                    displayName = current.displayName,
-                    bio = current.bio
-                )
-            ) {
+            when (val result = accountRepository.updateProfile(
+                username = current.username,
+                displayName = current.displayName,
+                bio = current.bio
+            )) {
                 is NimioResult.Success -> {
                     repository.saveProfile(
                         LocalProfile(
@@ -137,11 +136,17 @@ class AccountViewModel(
                             onboardingCompleted = true
                         )
                     )
-                    _uiState.update { it.copy(isSaving = false, saved = true) }
+                    _uiState.update { it.copy(isSaving = false, saved = true, errorMessage = null) }
                 }
 
                 is NimioResult.Error -> {
-                    _uiState.update { it.copy(isSaving = false, saved = false) }
+                    _uiState.update {
+                        it.copy(
+                            isSaving = false,
+                            saved = false,
+                            errorMessage = result.throwable.message
+                        )
+                    }
                 }
             }
         }

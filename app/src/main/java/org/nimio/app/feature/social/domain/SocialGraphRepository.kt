@@ -8,6 +8,8 @@ interface SocialGraphRepository {
 
     fun observeConnections(): Flow<List<ConnectionSummary>>
 
+    fun observeVisibleStatuses(): Flow<List<VisibleStatus>>
+
     suspend fun refreshConnections(
         status: ConnectionStatus? = ConnectionStatus.ACCEPTED
     ): NimioResult<List<ConnectionSummary>>
@@ -36,5 +38,7 @@ interface SocialGraphRepository {
         query: String,
         limit: Int = 20
     ): NimioResult<List<UserSearchResult>>
+
+    suspend fun refreshVisibleStatuses(): NimioResult<List<VisibleStatus>>
 }
 

@@ -2,6 +2,10 @@ package org.nimio.app.feature.social.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonTransformingSerializer
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -58,6 +62,9 @@ interface SocialApi {
         @Query("q") query: String,
         @Query("limit") limit: Int = 20
     ): ApiEnvelope<UserSearchPayloadDto>
+
+    @GET("v1/feed/status")
+    suspend fun getVisibleStatuses(): ApiEnvelope<VisibleStatusesPayloadDto>
 }
 
 @Serializable
@@ -99,6 +106,7 @@ data class ConnectionActionPayloadDto(
 
 @Serializable
 data class ConnectionsListPayloadDto(
+    @Serializable(with = ConnectionItemListSerializer::class)
     val connections: List<ConnectionItemDto> = emptyList(),
     val count: Int = 0
 )
@@ -122,6 +130,7 @@ data class ConnectionStatusPayloadDto(
 
 @Serializable
 data class UserSearchPayloadDto(
+    @Serializable(with = UserSearchItemListSerializer::class)
     val users: List<UserSearchItemDto> = emptyList(),
     val count: Int = 0
 )
@@ -135,11 +144,44 @@ data class UserSearchItemDto(
 )
 
 @Serializable
+data class VisibleStatusesPayloadDto(
+    @Serializable(with = VisibleStatusItemListSerializer::class)
+    val statuses: List<VisibleStatusItemDto> = emptyList(),
+    val count: Int = 0
+)
+
+@Serializable
+data class VisibleStatusItemDto(
+    val status: FeedStatusDto? = null,
+    val profile: SocialProfileDto? = null,
+    @SerialName("user_id") val userId: String? = null,
+    val username: String? = null,
+    @SerialName("display_name") val displayName: String? = null,
+    @SerialName("avatar_url") val avatarUrl: String? = null,
+    @SerialName("availability_type") val availabilityType: String? = null,
+    val note: String? = null,
+    @SerialName("visibility_tier") val visibilityTier: String? = null,
+    @SerialName("created_at") val createdAt: String? = null
+)
+
+@Serializable
+data class FeedStatusDto(
+    val id: String? = null,
+    @SerialName("user_id") val userId: String? = null,
+    @SerialName("availability_type") val availabilityType: String? = null,
+    val note: String? = null,
+    @SerialName("visibility_tier") val visibilityTier: String? = null,
+    @SerialName("created_at") val createdAt: String? = null
+)
+
+@Serializable
 data class ConnectionDto(
     val id: String,
     @SerialName("user_id") val userId: String,
     @SerialName("friend_id") val friendId: String,
-    @SerialName("relationship_tier") val relationshipTier: String,
+    @SerialName("relationship_tier") val relationshipTier: String = "ALL",
+    @SerialName("user_tier") val userTier: String? = null,
+    @SerialName("friend_tier") val friendTier: String? = null,
     val status: String,
     @SerialName("created_at") val createdAt: String? = null,
     @SerialName("updated_at") val updatedAt: String? = null
@@ -153,5 +195,29 @@ data class SocialProfileDto(
     @SerialName("avatar_url") val avatarUrl: String? = null,
     val bio: String? = null
 )
+
+private object ConnectionItemListSerializer : JsonTransformingSerializer<List<ConnectionItemDto>>(
+    ListSerializer(ConnectionItemDto.serializer())
+) {
+    override fun transformDeserialize(element: JsonElement): JsonElement {
+        return element as? JsonArray ?: JsonArray(emptyList())
+    }
+}
+
+private object UserSearchItemListSerializer : JsonTransformingSerializer<List<UserSearchItemDto>>(
+    ListSerializer(UserSearchItemDto.serializer())
+) {
+    override fun transformDeserialize(element: JsonElement): JsonElement {
+        return element as? JsonArray ?: JsonArray(emptyList())
+    }
+}
+
+private object VisibleStatusItemListSerializer : JsonTransformingSerializer<List<VisibleStatusItemDto>>(
+    ListSerializer(VisibleStatusItemDto.serializer())
+) {
+    override fun transformDeserialize(element: JsonElement): JsonElement {
+        return element as? JsonArray ?: JsonArray(emptyList())
+    }
+}
 
 

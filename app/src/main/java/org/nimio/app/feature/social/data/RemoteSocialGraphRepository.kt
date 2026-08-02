@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.nimio.app.core.common.NimioResult
 import org.nimio.app.feature.account.data.ApiEnvelope
@@ -18,6 +17,7 @@ import org.nimio.app.feature.social.domain.ConnectionTier
 import org.nimio.app.feature.social.domain.PendingActionHint
 import org.nimio.app.feature.social.domain.SocialGraphRepository
 import org.nimio.app.feature.social.domain.UserSearchResult
+import org.nimio.app.feature.social.domain.VisibleStatus
 import retrofit2.HttpException
 import javax.inject.Inject
 
@@ -27,23 +27,66 @@ class RemoteSocialGraphRepository @Inject constructor(
     private val json: Json
 ) : SocialGraphRepository {
     private val connectionsState = MutableStateFlow<List<ConnectionSummary>>(emptyList())
+    private val visibleStatusesState = MutableStateFlow<List<VisibleStatus>>(emptyList())
 
     override fun observeConnectionsCount(): Flow<Int> = connectionsState.map { it.size }
 
     override fun observeConnections(): Flow<List<ConnectionSummary>> = connectionsState.asStateFlow()
 
+    override fun observeVisibleStatuses(): Flow<List<VisibleStatus>> = visibleStatusesState.asStateFlow()
+
     override suspend fun refreshConnections(status: ConnectionStatus?): NimioResult<List<ConnectionSummary>> {
         return runCatching {
             val currentUserId = localProfileRepository.observeProfile().first().userId.trim()
-            val response = socialApi.getConnections(status = status?.name)
-            val payload = response.requireData()
-            val items = payload.connections.map { it.toDomain(currentUserId) }
+            val items = loadConnections(currentUserId = currentUserId, status = status)
             connectionsState.value = items
             items
         }.fold(
             onSuccess = { NimioResult.Success(it) },
             onFailure = { NimioResult.Error(it.toSocialError(json)) }
         )
+    }
+
+    private suspend fun loadConnections(
+        currentUserId: String,
+        status: ConnectionStatus?
+    ): List<ConnectionSummary> {
+        return if (status != null) {
+            fetchConnectionsByStatus(currentUserId = currentUserId, status = status)
+        } else {
+            // Some backend deployments reject a null status query; fallback to per-status fetches.
+            runCatching {
+                fetchConnectionsByStatus(currentUserId = currentUserId, status = null)
+            }.getOrElse {
+                val fallbackStatuses = listOf(
+                    ConnectionStatus.ACCEPTED,
+                    ConnectionStatus.PENDING,
+                    ConnectionStatus.BLOCKED
+                )
+                val merged = fallbackStatuses
+                    .mapNotNull { fallbackStatus ->
+                        runCatching {
+                            fetchConnectionsByStatus(
+                                currentUserId = currentUserId,
+                                status = fallbackStatus
+                            )
+                        }.getOrNull()
+                    }
+                    .flatten()
+                    .distinctBy { summary -> summary.id }
+
+                if (merged.isNotEmpty()) merged else throw it
+            }
+        }
+    }
+
+    private suspend fun fetchConnectionsByStatus(
+        currentUserId: String,
+        status: ConnectionStatus?
+    ): List<ConnectionSummary> {
+        val response = socialApi.getConnections(status = status?.name)
+        val payload = response.requireData()
+        return payload.connections.map { item -> item.toDomain(currentUserId) }
     }
 
     override suspend fun requestConnection(
@@ -165,6 +208,19 @@ class RemoteSocialGraphRepository @Inject constructor(
         )
     }
 
+    override suspend fun refreshVisibleStatuses(): NimioResult<List<VisibleStatus>> {
+        return runCatching {
+            val response = socialApi.getVisibleStatuses()
+            val statuses = response.requireData().statuses
+                .mapNotNull { item -> item.toDomainOrNull() }
+            visibleStatusesState.value = statuses
+            statuses
+        }.fold(
+            onSuccess = { NimioResult.Success(it) },
+            onFailure = { NimioResult.Error(it.toSocialError(json)) }
+        )
+    }
+
     private fun ApiEnvelope<ConnectionsListPayloadDto>.requireData(): ConnectionsListPayloadDto {
         return if (success && data != null) data else throw IllegalStateException(error?.message ?: "Unable to load connections")
     }
@@ -179,6 +235,10 @@ class RemoteSocialGraphRepository @Inject constructor(
 
     private fun ApiEnvelope<UserSearchPayloadDto>.requireData(): UserSearchPayloadDto {
         return if (success && data != null) data else throw IllegalStateException(error?.message ?: "Unable to search users")
+    }
+
+    private fun ApiEnvelope<VisibleStatusesPayloadDto>.requireData(): VisibleStatusesPayloadDto {
+        return if (success && data != null) data else throw IllegalStateException(error?.message ?: "Unable to load statuses")
     }
 
     private fun ApiEnvelope<MessagePayloadDto>.requireSuccess(fallback: String) {
@@ -196,7 +256,17 @@ class RemoteSocialGraphRepository @Inject constructor(
 
     private fun ConnectionDto.toDomain(currentUserId: String): ConnectionSummary {
         val counterpart = deriveCounterpartUserId(currentUserId)
-        val normalizedTier = relationshipTier.toConnectionTier()
+        val normalizedTier = when {
+            currentUserId.isNotBlank() && userId == currentUserId -> {
+                userTier.toConnectionTier(fallback = relationshipTier.toConnectionTier())
+            }
+
+            currentUserId.isNotBlank() && friendId == currentUserId -> {
+                friendTier.toConnectionTier(fallback = relationshipTier.toConnectionTier())
+            }
+
+            else -> relationshipTier.toConnectionTier()
+        }
         return ConnectionSummary(
             id = id,
             userId = userId,
@@ -233,10 +303,10 @@ class RemoteSocialGraphRepository @Inject constructor(
         )
     }
 
-    private fun String?.toConnectionTier(): ConnectionTier {
+    private fun String?.toConnectionTier(fallback: ConnectionTier = ConnectionTier.ALL): ConnectionTier {
         val normalized = this?.trim()?.uppercase().orEmpty()
         if (normalized == "MUTUAL") return ConnectionTier.ALL
-        return runCatching { ConnectionTier.valueOf(normalized) }.getOrDefault(ConnectionTier.ALL)
+        return runCatching { ConnectionTier.valueOf(normalized) }.getOrDefault(fallback)
     }
 
     private fun ConnectionDto.deriveCounterpartUserId(currentUserId: String): String {
@@ -250,6 +320,39 @@ class RemoteSocialGraphRepository @Inject constructor(
             username = username,
             displayName = displayName.orEmpty(),
             avatarUrl = avatarUrl
+        )
+    }
+
+    private fun VisibleStatusItemDto.toDomainOrNull(): VisibleStatus? {
+        val resolvedStatus = status
+        val resolvedProfile = profile
+
+        val resolvedUserId = resolvedProfile?.userId
+            ?: resolvedStatus?.userId
+            ?: userId
+            ?: return null
+
+        val resolvedUsername = resolvedProfile?.username
+            ?: username
+            ?: return null
+
+        val resolvedDisplayName = resolvedProfile?.displayName
+            ?: displayName
+            ?: resolvedUsername
+
+        val resolvedAvailability = resolvedStatus?.availabilityType
+            ?: availabilityType
+            ?: return null
+
+        return VisibleStatus(
+            userId = resolvedUserId,
+            username = resolvedUsername,
+            displayName = resolvedDisplayName,
+            avatarUrl = resolvedProfile?.avatarUrl ?: avatarUrl,
+            availabilityType = resolvedAvailability,
+            note = resolvedStatus?.note ?: note.orEmpty(),
+            visibilityTier = resolvedStatus?.visibilityTier ?: visibilityTier ?: "ALL_CONNECTIONS",
+            createdAt = resolvedStatus?.createdAt ?: createdAt
         )
     }
 

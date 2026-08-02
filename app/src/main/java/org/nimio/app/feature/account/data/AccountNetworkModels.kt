@@ -73,8 +73,8 @@ data class AuthPayloadDto(
 
 @Serializable
 data class ProfilePayloadDto(
-    val user: UserDto,
-    val profile: ProfileDto
+    val user: UserDto? = null,
+    val profile: ProfileDto? = null
 )
 
 @Serializable

@@ -29,6 +29,10 @@ class AuthInterceptor @Inject constructor(
         val response = chain.proceed(authorizedRequest)
         if (response.code == 401) {
             android.util.Log.w("AuthInterceptor", "401 on $path with token: ${token.take(10)}...")
+            runBlocking {
+                tokenDataSource.setLogoutNotice(AuthTokenDataSource.LOGOUT_NOTICE_SESSION_EXPIRED)
+                tokenDataSource.clearToken()
+            }
         }
         return response
     }

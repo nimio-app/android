@@ -1,5 +1,7 @@
 package org.nimio.app.feature.social.domain
 
+import org.nimio.app.feature.social.domain.PendingActionHint
+
 data class ConnectionSummary(
     val id: String,
     val userId: String,

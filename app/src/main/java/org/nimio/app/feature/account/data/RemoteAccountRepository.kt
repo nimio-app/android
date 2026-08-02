@@ -61,6 +61,7 @@ class RemoteAccountRepository @Inject constructor(
             )
             val payload = response.requireData()
             val existing = profileDataSource.observeProfile().first()
+            authTokenDataSource.clearLogoutNotice()
             authTokenDataSource.setToken(payload.token)
             saveMergedProfile(existing = existing, payload = payload)
             payload.toAccountSession()
@@ -83,6 +84,7 @@ class RemoteAccountRepository @Inject constructor(
             )
             val payload = response.requireData()
             val existing = profileDataSource.observeProfile().first()
+            authTokenDataSource.clearLogoutNotice()
             authTokenDataSource.setToken(payload.token)
             saveMergedProfile(existing = existing, payload = payload)
             payload.toAccountSession()
@@ -99,6 +101,7 @@ class RemoteAccountRepository @Inject constructor(
             )
             val payload = response.requireData()
             val existing = profileDataSource.observeProfile().first()
+            authTokenDataSource.clearLogoutNotice()
             authTokenDataSource.setToken(payload.token)
             saveMergedProfile(existing = existing, payload = payload)
             payload.toAccountSession()
@@ -160,15 +163,17 @@ class RemoteAccountRepository @Inject constructor(
             )
             val payload = response.requireData()
             val existing = profileDataSource.observeProfile().first()
+            val payloadUser = payload.user
+            val payloadProfile = payload.profile
             profileDataSource.saveProfile(
                 existing.copy(
-                    userId = payload.user.id,
-                    email = payload.user.email,
-                    emailVerified = payload.user.emailVerified,
-                    username = payload.profile.username,
-                    displayName = payload.profile.displayName,
-                    bio = payload.profile.bio ?: "",
-                    avatarUri = payload.profile.avatarUrl ?: existing.avatarUri,
+                    userId = payloadUser?.id ?: existing.userId,
+                    email = payloadUser?.email ?: existing.email,
+                    emailVerified = payloadUser?.emailVerified ?: existing.emailVerified,
+                    username = payloadProfile?.username ?: existing.username,
+                    displayName = payloadProfile?.displayName ?: existing.displayName,
+                    bio = payloadProfile?.bio ?: existing.bio,
+                    avatarUri = payloadProfile?.avatarUrl ?: existing.avatarUri,
                     onboardingCompleted = true
                 )
             )
@@ -187,14 +192,16 @@ class RemoteAccountRepository @Inject constructor(
         return runCatching {
             val response = accountApi.getMyProfile()
             val payload = response.requireData()
+            val payloadUser = payload.user
+            val payloadProfile = payload.profile
             val updatedProfile = existing.copy(
-                userId = payload.user.id,
-                email = payload.user.email,
-                emailVerified = payload.user.emailVerified,
-                username = payload.profile.username,
-                displayName = payload.profile.displayName,
-                bio = payload.profile.bio ?: existing.bio,
-                avatarUri = payload.profile.avatarUrl ?: existing.avatarUri,
+                userId = payloadUser?.id ?: existing.userId,
+                email = payloadUser?.email ?: existing.email,
+                emailVerified = payloadUser?.emailVerified ?: existing.emailVerified,
+                username = payloadProfile?.username ?: existing.username,
+                displayName = payloadProfile?.displayName ?: existing.displayName,
+                bio = payloadProfile?.bio ?: existing.bio,
+                avatarUri = payloadProfile?.avatarUrl ?: existing.avatarUri,
                 onboardingCompleted = true
             )
             profileDataSource.saveProfile(updatedProfile)

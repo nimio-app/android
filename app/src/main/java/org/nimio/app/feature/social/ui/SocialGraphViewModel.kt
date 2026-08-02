@@ -18,6 +18,7 @@ import org.nimio.app.feature.social.domain.ConnectionTier
 import org.nimio.app.feature.social.domain.PendingActionHint
 import org.nimio.app.feature.social.domain.SocialGraphRepository
 import org.nimio.app.feature.social.domain.UserSearchResult
+import org.nimio.app.feature.social.domain.VisibleStatus
 
 data class SocialGraphUiState(
     val connections: List<ConnectionSummary> = emptyList(),
@@ -28,6 +29,7 @@ data class SocialGraphUiState(
     val errorMessage: String? = null,
     val requestSearchQuery: String = "",
     val searchResults: List<UserSearchResult> = emptyList(),
+    val visibleStatuses: List<VisibleStatus> = emptyList(),
     val isSearchingUsers: Boolean = false,
     val searchErrorMessage: String? = null,
     val pendingOutgoingUserIds: Set<String> = emptySet(),
@@ -93,7 +95,13 @@ class SocialGraphViewModel(
                 }
             }
         }
+        viewModelScope.launch {
+            repository.observeVisibleStatuses().collect { statuses ->
+                _uiState.update { it.copy(visibleStatuses = statuses) }
+            }
+        }
         refresh()
+        refreshVisibleStatuses()
     }
 
     fun onRequestSearchQueryChanged(value: String) {
@@ -164,6 +172,20 @@ class SocialGraphViewModel(
         }
     }
 
+    fun refreshVisibleStatuses() {
+        viewModelScope.launch {
+            when (val result = repository.refreshVisibleStatuses()) {
+                is NimioResult.Success -> _uiState.update {
+                    it.copy(visibleStatuses = result.value)
+                }
+
+                is NimioResult.Error -> _uiState.update {
+                    it.copy(errorMessage = result.throwable.message)
+                }
+            }
+        }
+    }
+
     fun sendRequest(toUserId: String) {
         val current = _uiState.value
         val userId = toUserId.trim()
@@ -197,6 +219,7 @@ class SocialGraphViewModel(
                 }
             }
             refresh()
+            refreshVisibleStatuses()
         }
     }
 
@@ -219,7 +242,10 @@ class SocialGraphViewModel(
     fun remove(friendId: String) {
         viewModelScope.launch {
             when (val result = repository.removeConnection(friendId)) {
-                is NimioResult.Success -> refresh()
+                is NimioResult.Success -> {
+                    refresh()
+                    refreshVisibleStatuses()
+                }
                 is NimioResult.Error -> _uiState.update { it.copy(errorMessage = result.throwable.message) }
             }
         }
@@ -237,6 +263,7 @@ class SocialGraphViewModel(
                 }
             }
             refresh()
+            refreshVisibleStatuses()
         }
     }
 
