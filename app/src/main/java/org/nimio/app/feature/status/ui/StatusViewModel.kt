@@ -43,6 +43,17 @@ class StatusViewModel(
                 }
             }
         }
+
+        viewModelScope.launch {
+            repository.observeActiveStatuses().collect { active ->
+                _uiState.update {
+                    it.copy(
+                        activeAllStatus = active[VisibilityTier.ALL_CONNECTIONS],
+                        activeCircleStatus = active[VisibilityTier.CIRCLE_ONLY]
+                    )
+                }
+            }
+        }
     }
 
     fun onAvailabilitySelected(availability: Availability) {
@@ -62,7 +73,31 @@ class StatusViewModel(
     }
 
     fun onVisibilityTierSelected(tier: VisibilityTier) {
-        _uiState.update { it.copy(selectedVisibilityTier = tier) }
+        _uiState.update { current ->
+            val tierStatus = when (tier) {
+                VisibilityTier.ALL_CONNECTIONS -> current.activeAllStatus
+                VisibilityTier.CIRCLE_ONLY -> current.activeCircleStatus
+            }
+
+            if (tierStatus == null) {
+                current.copy(
+                    selectedVisibilityTier = tier,
+                    selectedAvailability = Availability.FREE,
+                    noteText = "",
+                    expiresAtEpochMillis = null,
+                    selectedExpiry = StatusExpiry.NONE
+                )
+            } else {
+                current.copy(
+                    selectedVisibilityTier = tier,
+                    selectedAvailability = tierStatus.availability,
+                    noteText = tierStatus.note,
+                    expiresAtEpochMillis = tierStatus.expiresAtEpochMillis,
+                    selectedExpiry = StatusExpiry.NONE,
+                    lastUpdatedEpochMillis = tierStatus.updatedAtEpochMillis
+                )
+            }
+        }
     }
 
     fun saveStatus() {
@@ -103,6 +138,7 @@ class StatusViewModel(
                 }
 
                 _uiState.update { it.copy(justSaved = true) }
+                runCatching { repository.refreshStatus() }
             } finally {
                 _uiState.update { it.copy(isSaving = false) }
             }

@@ -17,6 +17,9 @@ interface StatusApi {
     @GET("v1/me/status")
     suspend fun getMyStatus(): ApiEnvelope<StatusPayloadDto>
 
+    @GET("v1/me/statuses")
+    suspend fun getMyStatuses(): ApiEnvelope<StatusesPayloadDto>
+
     @DELETE("v1/me/status")
     suspend fun clearMyStatus(): ApiEnvelope<StatusPayloadDto>
 }
@@ -32,6 +35,12 @@ data class UpdateStatusRequestDto(
 @Serializable
 data class StatusPayloadDto(
     val status: StatusDto? = null
+)
+
+@Serializable
+data class StatusesPayloadDto(
+    val statuses: List<StatusDto> = emptyList(),
+    val count: Int = 0
 )
 
 @Serializable

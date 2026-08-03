@@ -3,7 +3,9 @@ package org.nimio.app.feature.status.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -32,6 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -41,6 +44,7 @@ import org.nimio.app.core.ui.NimioSectionHeader
 import org.nimio.app.feature.status.domain.Availability
 import org.nimio.app.feature.status.domain.StatusExpiry
 import org.nimio.app.feature.status.domain.StatusRepository
+import org.nimio.app.feature.status.domain.UserStatus
 import org.nimio.app.feature.status.domain.VisibilityTier
 import org.nimio.app.feature.status.sync.WorkManagerStatusExpiryScheduler
 
@@ -67,6 +71,8 @@ fun StatusScreen(
     ) {
         // Current state summary header
         CurrentStatusSummary(uiState = uiState)
+
+        LiveStatusesSection(uiState = uiState)
 
         // Quick top tabs for who can see this status.
         StatusVisibilityTabs(
@@ -138,6 +144,77 @@ fun StatusScreen(
 }
 
 @Composable
+private fun LiveStatusesSection(uiState: StatusUiState) {
+    NimioSectionCard {
+        NimioSectionHeader(
+            title = stringResource(id = R.string.status_live_title),
+            description = stringResource(id = R.string.status_live_description)
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            LiveStatusCard(
+                label = stringResource(id = R.string.status_live_all_label),
+                status = uiState.activeAllStatus,
+                modifier = Modifier.weight(1f)
+            )
+            LiveStatusCard(
+                label = stringResource(id = R.string.status_live_circle_label),
+                status = uiState.activeCircleStatus,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun LiveStatusCard(
+    label: String,
+    status: UserStatus?,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(14.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold
+            )
+            if (status == null) {
+                Text(
+                    text = stringResource(id = R.string.status_live_none),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+            } else {
+                Text(
+                    text = "${status.availability.emoji} ${status.availability.displayLabel}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                if (status.note.isNotBlank()) {
+                    Text(
+                        text = status.note,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun StatusVisibilityTabs(
     selected: VisibilityTier,
     onSelected: (VisibilityTier) -> Unit
@@ -187,6 +264,15 @@ private fun CurrentStatusSummary(uiState: StatusUiState) {
                     text = current.displayLabel,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = if (uiState.selectedVisibilityTier == VisibilityTier.CIRCLE_ONLY) {
+                        stringResource(id = R.string.status_editor_circle)
+                    } else {
+                        stringResource(id = R.string.status_editor_all)
+                    },
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Text(
                     text = current.hint,

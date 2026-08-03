@@ -17,6 +17,13 @@
     <string name="status_visibility_title">Who can see this status?</string>
     <string name="status_visibility_description">All is visible to all connections. Circle is visible only to people you marked as Circle.</string>
     <string name="status_saved">✓ Saved!</string>
+    <string name="status_live_title">Live now</string>
+    <string name="status_live_description">See exactly what is currently going out for each audience.</string>
+    <string name="status_live_all_label">All connections</string>
+    <string name="status_live_circle_label">Inner circle</string>
+    <string name="status_live_none">No active status</string>
+    <string name="status_editor_all">Editing: All connections</string>
+    <string name="status_editor_circle">Editing: Inner circle</string>
 
     <string name="availability_free">Free to chat</string>
     <string name="availability_focused">In deep focus</string>
