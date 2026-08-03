@@ -23,6 +23,7 @@ import org.nimio.app.feature.status.domain.Availability
 import org.nimio.app.feature.status.domain.StatusExpiry
 import org.nimio.app.feature.status.domain.StatusRepository
 import org.nimio.app.feature.status.domain.UserStatus
+import org.nimio.app.feature.status.domain.VisibilityTier
 import org.nimio.app.feature.status.sync.StatusExpiryScheduler
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -118,6 +119,9 @@ class StatusViewModelTest {
         private val state = MutableStateFlow(UserStatus())
 
         override fun observeStatus(): Flow<UserStatus> = state
+
+        override fun observeActiveStatuses(): Flow<Map<VisibilityTier, UserStatus>> =
+            MutableStateFlow(emptyMap())
 
         override suspend fun saveStatus(status: UserStatus) {
             state.value = status

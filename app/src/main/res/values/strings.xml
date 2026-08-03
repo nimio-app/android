@@ -60,6 +60,10 @@
     <string name="social_empty_state_hint">Search for people above to add friends</string>
     <string name="social_statuses_title">Recent statuses</string>
     <string name="social_statuses_empty">No visible statuses yet.</string>
+    <string name="social_profile_bio_empty">No bio added yet.</string>
+    <string name="social_circle_toggle_label">Inner circle</string>
+    <string name="social_remove_from_details">Remove connection</string>
+    <string name="social_details_done">Done</string>
 
     <string name="account_screen_title">Account</string>
     <string name="account_screen_description">Sign-in, profile identity, and account preferences will be managed here.</string>

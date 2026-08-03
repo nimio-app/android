@@ -299,7 +299,8 @@ class RemoteSocialGraphRepository @Inject constructor(
             pendingActionHint = actionHint,
             username = profile.username,
             displayName = profile.displayName,
-            avatarUrl = profile.avatarUrl
+            avatarUrl = profile.avatarUrl,
+            bio = profile.bio
         )
     }
 

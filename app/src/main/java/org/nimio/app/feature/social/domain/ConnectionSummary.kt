@@ -17,6 +17,7 @@ data class ConnectionSummary(
     val pendingActionHint: PendingActionHint? = null,
     val username: String = "",
     val displayName: String = "",
-    val avatarUrl: String? = null
+    val avatarUrl: String? = null,
+    val bio: String? = null
 )
 

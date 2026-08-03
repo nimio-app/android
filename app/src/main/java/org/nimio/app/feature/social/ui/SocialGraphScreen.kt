@@ -2,6 +2,7 @@ package org.nimio.app.feature.social.ui
 
 import android.text.format.DateFormat
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,10 +28,12 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -56,6 +59,7 @@ import java.util.Locale
 import coil.compose.SubcomposeAsyncImage
 import org.nimio.app.R
 import org.nimio.app.feature.social.data.InMemorySocialGraphRepository
+import org.nimio.app.feature.social.domain.ConnectionSummary
 import org.nimio.app.feature.social.domain.ConnectionStatus
 import org.nimio.app.feature.social.domain.ConnectionTier
 import org.nimio.app.feature.social.domain.SocialGraphRepository
@@ -70,6 +74,7 @@ fun SocialGraphScreen(
     val factory = remember(socialGraphRepository) { SocialGraphViewModelFactory(socialGraphRepository) }
     val viewModel: SocialGraphViewModel = viewModel(factory = factory)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var selectedConnection by remember { mutableStateOf<ConnectionSummary?>(null) }
 
     Column(
         modifier = Modifier
@@ -311,27 +316,9 @@ fun SocialGraphScreen(
                         title = item.displayName.ifBlank { item.username },
                         username = item.username,
                         avatarUrl = item.avatarUrl,
-                        myTierForThem = item.myTierForThem,
+                        onClick = { selectedConnection = item },
                         trailing = {
-                            Column(
-                                horizontalAlignment = Alignment.End,
-                                verticalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    ConnectionTier.entries.forEach { tier ->
-                                        FilterChip(
-                                            selected = item.myTierForThem == tier,
-                                            onClick = { viewModel.updateTier(item.id, tier) },
-                                            label = { Text(tier.displayLabel) },
-                                            enabled = !uiState.isSubmitting
-                                        )
-                                    }
-                                }
-                                OutlinedButton(
-                                    onClick = { viewModel.remove(item.counterpartUserId) },
-                                    enabled = !uiState.isSubmitting
-                                ) { Text(stringResource(id = R.string.social_remove)) }
-                            }
+                            ConnectionTypeIndicator(tier = item.myTierForThem)
                         }
                     )
                     HorizontalDivider(modifier = Modifier.padding(start = 56.dp))
@@ -364,6 +351,22 @@ fun SocialGraphScreen(
                 }
             }
         }
+    }
+
+    selectedConnection?.let { connection ->
+        ConnectionDetailsDialog(
+            connection = connection,
+            isSubmitting = uiState.isSubmitting,
+            onDismiss = { selectedConnection = null },
+            onTierChanged = { tier ->
+                selectedConnection = connection.copy(myTierForThem = tier)
+                viewModel.updateTier(connection.id, tier)
+            },
+            onRemove = {
+                viewModel.remove(connection.counterpartUserId)
+                selectedConnection = null
+            }
+        )
     }
 }
 
@@ -592,11 +595,16 @@ private fun ConnectionPersonRow(
     title: String,
     username: String,
     avatarUrl: String?,
-    myTierForThem: ConnectionTier? = null,
+    onClick: (() -> Unit)? = null,
     trailing: @Composable () -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp)
+            .then(
+                if (onClick != null) Modifier.clickable { onClick() } else Modifier
+            ),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -604,23 +612,13 @@ private fun ConnectionPersonRow(
         Column(modifier = Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
             Text("@$username", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            if (myTierForThem != null) {
-                Row(
-                    modifier = Modifier.padding(top = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TierDirectionBadge(label = stringResource(id = R.string.social_tier_you), tier = myTierForThem)
-                }
-            }
         }
         trailing()
     }
 }
 
 @Composable
-private fun TierDirectionBadge(
-    label: String,
+private fun ConnectionTypeIndicator(
     tier: ConnectionTier
 ) {
     val icon = if (tier == ConnectionTier.CIRCLE) Icons.Default.Star else Icons.Default.Groups
@@ -638,11 +636,6 @@ private fun TierDirectionBadge(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "$label:",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
             Icon(
                 imageVector = icon,
                 contentDescription = null,
@@ -656,6 +649,83 @@ private fun TierDirectionBadge(
             )
         }
     }
+}
+
+@Composable
+private fun ConnectionDetailsDialog(
+    connection: ConnectionSummary,
+    isSubmitting: Boolean,
+    onDismiss: () -> Unit,
+    onTierChanged: (ConnectionTier) -> Unit,
+    onRemove: () -> Unit
+) {
+    val title = connection.displayName.ifBlank { connection.username }
+    val bio = connection.bio?.trim().orEmpty()
+    val isCircle = connection.myTierForThem == ConnectionTier.CIRCLE
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = title) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "@${connection.username}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = if (bio.isBlank()) {
+                        stringResource(id = R.string.social_profile_bio_empty)
+                    } else {
+                        bio
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            tint = if (isCircle) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = stringResource(id = R.string.social_circle_toggle_label),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    Switch(
+                        checked = isCircle,
+                        onCheckedChange = { checked ->
+                            onTierChanged(if (checked) ConnectionTier.CIRCLE else ConnectionTier.ALL)
+                        },
+                        enabled = !isSubmitting
+                    )
+                }
+                TextButton(
+                    onClick = onRemove,
+                    enabled = !isSubmitting
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.social_remove_from_details),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(id = R.string.social_details_done))
+            }
+        }
+    )
 }
 
 // ── Tiny badge ─────────────────────────────────────────────────────────────
