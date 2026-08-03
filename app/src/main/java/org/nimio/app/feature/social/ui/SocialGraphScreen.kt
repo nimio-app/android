@@ -210,7 +210,11 @@ fun SocialGraphScreen(
                             availability = status.availabilityType,
                             note = status.note,
                             expiresAt = status.expiresAt,
-                            use24Hour = use24Hour
+                            use24Hour = use24Hour,
+                            onAvatarClick = {
+                                val connection = uiState.connections.find { it.counterpartUserId == status.userId }
+                                if (connection != null) selectedConnection = connection
+                            }
                         )
                         HorizontalDivider(modifier = Modifier.padding(start = 56.dp))
                     }
@@ -378,7 +382,8 @@ private fun StatusFeedRow(
     availability: String,
     note: String,
     expiresAt: String?,
-    use24Hour: Boolean
+    use24Hour: Boolean,
+    onAvatarClick: (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier
@@ -387,7 +392,11 @@ private fun StatusFeedRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        UserAvatar(avatarUrl = avatarUrl, name = title)
+        Box(
+            modifier = if (onAvatarClick != null) Modifier.clickable { onAvatarClick() } else Modifier
+        ) {
+            UserAvatar(avatarUrl = avatarUrl, name = title)
+        }
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(text = title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
             Text(text = "@$username", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -662,6 +671,33 @@ private fun ConnectionDetailsDialog(
     val title = connection.displayName.ifBlank { connection.username }
     val bio = connection.bio?.trim().orEmpty()
     val isCircle = connection.myTierForThem == ConnectionTier.CIRCLE
+    var showRemoveConfirm by remember { mutableStateOf(false) }
+
+    if (showRemoveConfirm) {
+        AlertDialog(
+            onDismissRequest = { showRemoveConfirm = false },
+            title = { Text(stringResource(id = R.string.social_remove_confirm_title)) },
+            text = { Text(stringResource(id = R.string.social_remove_confirm_message, title)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showRemoveConfirm = false
+                        onRemove()
+                    }
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.social_remove_confirm_action),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRemoveConfirm = false }) {
+                    Text(stringResource(id = R.string.social_cancel))
+                }
+            }
+        )
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -710,7 +746,7 @@ private fun ConnectionDetailsDialog(
                     )
                 }
                 TextButton(
-                    onClick = onRemove,
+                    onClick = { showRemoveConfirm = true },
                     enabled = !isSubmitting
                 ) {
                     Text(
