@@ -37,6 +37,11 @@ data class LoginRequestDto(
 )
 
 @Serializable
+data class RefreshTokenRequestDto(
+    @SerialName("refresh_token") val refreshToken: String
+)
+
+@Serializable
 data class ResendVerificationRequestDto(
     val email: String
 )
@@ -68,7 +73,14 @@ data class GoogleSignInRequestDto(
 data class AuthPayloadDto(
     val user: UserDto,
     val profile: ProfileDto,
-    val token: String
+    val token: String,
+    @SerialName("refresh_token") val refreshToken: String? = null
+)
+
+@Serializable
+data class RefreshTokenPayloadDto(
+    val token: String,
+    @SerialName("refresh_token") val refreshToken: String
 )
 
 @Serializable

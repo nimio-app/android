@@ -20,6 +20,7 @@ private val Context.authDataStore: DataStore<Preferences> by preferencesDataStor
 
 private object AuthPreferencesKeys {
     val accessToken = stringPreferencesKey("access_token")
+    val refreshToken = stringPreferencesKey("refresh_token")
     val logoutNotice = stringPreferencesKey("logout_notice")
 }
 
@@ -52,6 +53,16 @@ class AuthTokenDataSource @Inject constructor(
         }
         .map { preferences -> preferences[AuthPreferencesKeys.logoutNotice] }
 
+    fun observeRefreshToken() = dataStore.data
+        .catch { error ->
+            if (error is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw error
+            }
+        }
+        .map { preferences -> preferences[AuthPreferencesKeys.refreshToken] }
+
     suspend fun getToken(): String? {
         return observeToken().first()
     }
@@ -60,9 +71,19 @@ class AuthTokenDataSource @Inject constructor(
         return observeLogoutNotice().first()
     }
 
+    suspend fun getRefreshToken(): String? {
+        return observeRefreshToken().first()
+    }
+
     suspend fun setToken(token: String) {
         dataStore.edit { preferences ->
             preferences[AuthPreferencesKeys.accessToken] = token
+        }
+    }
+
+    suspend fun setRefreshToken(token: String) {
+        dataStore.edit { preferences ->
+            preferences[AuthPreferencesKeys.refreshToken] = token
         }
     }
 
@@ -75,6 +96,19 @@ class AuthTokenDataSource @Inject constructor(
     suspend fun clearToken() {
         dataStore.edit { preferences ->
             preferences.remove(AuthPreferencesKeys.accessToken)
+        }
+    }
+
+    suspend fun clearRefreshToken() {
+        dataStore.edit { preferences ->
+            preferences.remove(AuthPreferencesKeys.refreshToken)
+        }
+    }
+
+    suspend fun clearTokens() {
+        dataStore.edit { preferences ->
+            preferences.remove(AuthPreferencesKeys.accessToken)
+            preferences.remove(AuthPreferencesKeys.refreshToken)
         }
     }
 

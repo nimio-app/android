@@ -21,6 +21,11 @@ interface AccountApi {
         @Body request: LoginRequestDto
     ): ApiEnvelope<AuthPayloadDto>
 
+    @POST("v1/auth/refresh")
+    suspend fun refreshToken(
+        @Body request: RefreshTokenRequestDto
+    ): ApiEnvelope<RefreshTokenPayloadDto>
+
     @POST("v1/auth/google")
     suspend fun googleSignIn(
         @Body request: GoogleSignInRequestDto

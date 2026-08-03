@@ -63,6 +63,7 @@ class RemoteAccountRepository @Inject constructor(
             val existing = profileDataSource.observeProfile().first()
             authTokenDataSource.clearLogoutNotice()
             authTokenDataSource.setToken(payload.token)
+            payload.refreshToken?.let { authTokenDataSource.setRefreshToken(it) }
             saveMergedProfile(existing = existing, payload = payload)
             payload.toAccountSession()
         }.fold(
@@ -86,6 +87,7 @@ class RemoteAccountRepository @Inject constructor(
             val existing = profileDataSource.observeProfile().first()
             authTokenDataSource.clearLogoutNotice()
             authTokenDataSource.setToken(payload.token)
+            payload.refreshToken?.let { authTokenDataSource.setRefreshToken(it) }
             saveMergedProfile(existing = existing, payload = payload)
             payload.toAccountSession()
         }.fold(
@@ -103,6 +105,7 @@ class RemoteAccountRepository @Inject constructor(
             val existing = profileDataSource.observeProfile().first()
             authTokenDataSource.clearLogoutNotice()
             authTokenDataSource.setToken(payload.token)
+            payload.refreshToken?.let { authTokenDataSource.setRefreshToken(it) }
             saveMergedProfile(existing = existing, payload = payload)
             payload.toAccountSession()
         }.fold(
@@ -220,7 +223,7 @@ class RemoteAccountRepository @Inject constructor(
     }
 
     override suspend fun signOut() {
-        authTokenDataSource.clearToken()
+        authTokenDataSource.clearTokens()
         profileDataSource.saveProfile(LocalProfile())
     }
 
