@@ -161,7 +161,8 @@ data class VisibleStatusItemDto(
     @SerialName("availability_type") val availabilityType: String? = null,
     val note: String? = null,
     @SerialName("visibility_tier") val visibilityTier: String? = null,
-    @SerialName("created_at") val createdAt: String? = null
+    @SerialName("created_at") val createdAt: String? = null,
+    @SerialName("expires_at") val expiresAt: String? = null
 )
 
 @Serializable
@@ -171,7 +172,8 @@ data class FeedStatusDto(
     @SerialName("availability_type") val availabilityType: String? = null,
     val note: String? = null,
     @SerialName("visibility_tier") val visibilityTier: String? = null,
-    @SerialName("created_at") val createdAt: String? = null
+    @SerialName("created_at") val createdAt: String? = null,
+    @SerialName("expires_at") val expiresAt: String? = null
 )
 
 @Serializable

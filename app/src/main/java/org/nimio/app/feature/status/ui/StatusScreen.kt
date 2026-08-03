@@ -1,5 +1,6 @@
 package org.nimio.app.feature.status.ui
 
+import android.text.format.DateFormat
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
@@ -38,6 +39,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import org.nimio.app.R
 import org.nimio.app.core.ui.NimioSectionCard
 import org.nimio.app.core.ui.NimioSectionHeader
@@ -53,6 +59,7 @@ fun StatusScreen(
     repository: StatusRepository
 ) {
     val context = LocalContext.current
+    val use24Hour = DateFormat.is24HourFormat(context)
     val viewModelFactory = androidx.compose.runtime.remember(context) {
         StatusViewModelFactory(
             repository = repository,
@@ -72,7 +79,7 @@ fun StatusScreen(
         // Current state summary header
         CurrentStatusSummary(uiState = uiState)
 
-        LiveStatusesSection(uiState = uiState)
+        LiveStatusesSection(uiState = uiState, use24Hour = use24Hour)
 
         // Quick top tabs for who can see this status.
         StatusVisibilityTabs(
@@ -144,7 +151,7 @@ fun StatusScreen(
 }
 
 @Composable
-private fun LiveStatusesSection(uiState: StatusUiState) {
+private fun LiveStatusesSection(uiState: StatusUiState, use24Hour: Boolean) {
     NimioSectionCard {
         NimioSectionHeader(
             title = stringResource(id = R.string.status_live_title),
@@ -157,11 +164,13 @@ private fun LiveStatusesSection(uiState: StatusUiState) {
             LiveStatusCard(
                 label = stringResource(id = R.string.status_live_all_label),
                 status = uiState.activeAllStatus,
+                use24Hour = use24Hour,
                 modifier = Modifier.weight(1f)
             )
             LiveStatusCard(
                 label = stringResource(id = R.string.status_live_circle_label),
                 status = uiState.activeCircleStatus,
+                use24Hour = use24Hour,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -172,6 +181,7 @@ private fun LiveStatusesSection(uiState: StatusUiState) {
 private fun LiveStatusCard(
     label: String,
     status: UserStatus?,
+    use24Hour: Boolean,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -202,6 +212,13 @@ private fun LiveStatusCard(
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium
                 )
+                formatEpochExpiryLabel(status.expiresAtEpochMillis, use24Hour)?.let { label ->
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 if (status.note.isNotBlank()) {
                     Text(
                         text = status.note,
@@ -212,6 +229,28 @@ private fun LiveStatusCard(
             }
         }
     }
+}
+
+private fun formatEpochExpiryLabel(expiresAtEpochMillis: Long?, use24Hour: Boolean): String? {
+    val epoch = expiresAtEpochMillis ?: return null
+    val parsed = runCatching { Instant.ofEpochMilli(epoch) }.getOrNull() ?: return null
+    val now = Instant.now()
+    if (!parsed.isAfter(now)) return "Expired"
+
+    val minutes = Duration.between(now, parsed).toMinutes()
+    val relative = when {
+        minutes < 1 -> "Expires in <1m"
+        minutes < 60 -> "Expires in ${minutes}m"
+        minutes < 24 * 60 -> "Expires in ${minutes / 60}h ${minutes % 60}m"
+        else -> "Expires in ${minutes / (24 * 60)}d"
+    }
+
+    val timePattern = if (use24Hour) "HH:mm" else "h:mm a"
+    val absolute = DateTimeFormatter.ofPattern(timePattern, Locale.getDefault())
+        .withZone(ZoneId.systemDefault())
+        .format(parsed)
+
+    return "$relative • $absolute"
 }
 
 @Composable

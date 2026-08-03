@@ -1,5 +1,6 @@
 package org.nimio.app.feature.social.ui
 
+import android.text.format.DateFormat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,8 +45,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import coil.compose.SubcomposeAsyncImage
 import org.nimio.app.R
 import org.nimio.app.feature.social.data.InMemorySocialGraphRepository
@@ -58,6 +65,8 @@ import org.nimio.app.feature.social.domain.UserSearchResult
 fun SocialGraphScreen(
     socialGraphRepository: SocialGraphRepository = InMemorySocialGraphRepository()
 ) {
+    val context = LocalContext.current
+    val use24Hour = DateFormat.is24HourFormat(context)
     val factory = remember(socialGraphRepository) { SocialGraphViewModelFactory(socialGraphRepository) }
     val viewModel: SocialGraphViewModel = viewModel(factory = factory)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -194,7 +203,9 @@ fun SocialGraphScreen(
                             username = status.username,
                             avatarUrl = status.avatarUrl,
                             availability = status.availabilityType,
-                            note = status.note
+                            note = status.note,
+                            expiresAt = status.expiresAt,
+                            use24Hour = use24Hour
                         )
                         HorizontalDivider(modifier = Modifier.padding(start = 56.dp))
                     }
@@ -362,7 +373,9 @@ private fun StatusFeedRow(
     username: String,
     avatarUrl: String?,
     availability: String,
-    note: String
+    note: String,
+    expiresAt: String?,
+    use24Hour: Boolean
 ) {
     Row(
         modifier = Modifier
@@ -376,11 +389,39 @@ private fun StatusFeedRow(
             Text(text = title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
             Text(text = "@$username", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(text = availability.replace('_', ' '), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+            formatExpiryLabel(expiresAt, use24Hour)?.let { label ->
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             if (note.isNotBlank()) {
                 Text(text = note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
             }
         }
     }
+}
+
+private fun formatExpiryLabel(expiresAt: String?, use24Hour: Boolean): String? {
+    val parsed = expiresAt?.let { runCatching { Instant.parse(it) }.getOrNull() } ?: return null
+    val now = Instant.now()
+    if (!parsed.isAfter(now)) return "Expired"
+
+    val minutes = Duration.between(now, parsed).toMinutes()
+    val relative = when {
+        minutes < 1 -> "Expires in <1m"
+        minutes < 60 -> "Expires in ${minutes}m"
+        minutes < 24 * 60 -> "Expires in ${minutes / 60}h ${minutes % 60}m"
+        else -> "Expires in ${minutes / (24 * 60)}d"
+    }
+
+    val timePattern = if (use24Hour) "HH:mm" else "h:mm a"
+    val absolute = DateTimeFormatter.ofPattern(timePattern, Locale.getDefault())
+        .withZone(ZoneId.systemDefault())
+        .format(parsed)
+
+    return "$relative • $absolute"
 }
 
 @Composable

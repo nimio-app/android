@@ -8,6 +8,7 @@ data class VisibleStatus(
     val availabilityType: String,
     val note: String = "",
     val visibilityTier: String = "ALL_CONNECTIONS",
-    val createdAt: String? = null
+    val createdAt: String? = null,
+    val expiresAt: String? = null
 )
 

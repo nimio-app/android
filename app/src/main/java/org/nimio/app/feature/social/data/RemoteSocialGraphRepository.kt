@@ -352,7 +352,8 @@ class RemoteSocialGraphRepository @Inject constructor(
             availabilityType = resolvedAvailability,
             note = resolvedStatus?.note ?: note.orEmpty(),
             visibilityTier = resolvedStatus?.visibilityTier ?: visibilityTier ?: "ALL_CONNECTIONS",
-            createdAt = resolvedStatus?.createdAt ?: createdAt
+            createdAt = resolvedStatus?.createdAt ?: createdAt,
+            expiresAt = resolvedStatus?.expiresAt ?: expiresAt
         )
     }
 
