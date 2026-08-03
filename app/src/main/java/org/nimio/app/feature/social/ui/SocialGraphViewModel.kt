@@ -202,7 +202,7 @@ class SocialGraphViewModel(
         }
         _uiState.update { it.copy(isSubmitting = true, errorMessage = null, message = null) }
         viewModelScope.launch {
-            when (val result = repository.requestConnection(userId, current.relationshipTier)) {
+            when (val result = repository.requestConnection(userId, ConnectionTier.ALL)) {
                 is NimioResult.Success -> _uiState.update {
                     it.copy(
                         isSubmitting = false,

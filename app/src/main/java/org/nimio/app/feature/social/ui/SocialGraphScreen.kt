@@ -162,8 +162,6 @@ fun SocialGraphScreen(
                         SearchPersonRow(
                             result = result,
                             existingStatus = existingStatus,
-                            selectedTier = uiState.relationshipTier,
-                            onTierChanged = viewModel::onRelationshipTierChanged,
                             onRequest = { viewModel.sendRequest(result.userId) },
                             isSubmitting = uiState.isSubmitting
                         )
@@ -525,13 +523,10 @@ private fun InitialsAvatar(name: String, size: Int = 40) {
 private fun SearchPersonRow(
     result: UserSearchResult,
     existingStatus: ConnectionStatus?,
-    selectedTier: ConnectionTier,
-    onTierChanged: (ConnectionTier) -> Unit,
     onRequest: () -> Unit,
     isSubmitting: Boolean
 ) {
     val title = result.displayName.ifBlank { result.username }
-    var showTierPicker by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
         Row(
@@ -549,48 +544,14 @@ private fun SearchPersonRow(
                 ConnectionStatus.ACCEPTED -> StatusBadge(stringResource(id = R.string.social_badge_connected), MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.onTertiaryContainer)
                 ConnectionStatus.BLOCKED -> StatusBadge(stringResource(id = R.string.social_badge_blocked), MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer)
                 else -> {
-                    if (!showTierPicker) {
-                        androidx.compose.material3.FilledTonalButton(
-                            onClick = { showTierPicker = true },
-                            enabled = !isSubmitting
-                        ) {
-                            Icon(Icons.Default.PersonAdd, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.size(4.dp))
-                            Text(stringResource(id = R.string.social_add))
-                        }
+                    androidx.compose.material3.FilledTonalButton(
+                        onClick = onRequest,
+                        enabled = !isSubmitting
+                    ) {
+                        Icon(Icons.Default.PersonAdd, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.size(4.dp))
+                        Text(stringResource(id = R.string.social_add))
                     }
-                }
-            }
-        }
-        // Tier picker expands inline, then user taps Send
-        if (showTierPicker && existingStatus == null) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(start = 52.dp, top = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                ConnectionTier.entries.forEach { tier ->
-                    FilterChip(
-                        selected = selectedTier == tier,
-                        onClick = { onTierChanged(tier) },
-                        label = { Text(tier.displayLabel, style = MaterialTheme.typography.labelSmall) }
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                androidx.compose.material3.Button(
-                    onClick = {
-                        showTierPicker = false
-                        onRequest()
-                    },
-                    enabled = !isSubmitting
-                ) {
-                    Text(
-                        text = if (isSubmitting) {
-                            stringResource(id = R.string.social_sending_short)
-                        } else {
-                            stringResource(id = R.string.social_send)
-                        }
-                    )
                 }
             }
         }

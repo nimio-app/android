@@ -64,7 +64,7 @@
     <string name="social_circle_toggle_label">Inner circle</string>
     <string name="social_remove_from_details">Remove connection</string>
     <string name="social_remove_confirm_title">Remove connection?</string>
-    <string name="social_remove_confirm_message">Are you sure you want to remove %1$s as a connection? This cannot be undone.</string>
+    <string name="social_remove_confirm_message">If you remove %1$s, you will have to request them again if you want to add them back.</string>
     <string name="social_remove_confirm_action">Remove</string>
     <string name="social_details_done">Done</string>
 
