@@ -14,8 +14,9 @@ Layers:
 - `org.nimio.app.core.database`
 - `org.nimio.app.core.network`
 - `org.nimio.app.feature.status`
-- `org.nimio.app.feature.connections`
-- `org.nimio.app.feature.profile`
+- `org.nimio.app.feature.social`
+- `org.nimio.app.feature.account`
+- `org.nimio.app.feature.sync`
 - `org.nimio.app.navigation`
 - `org.nimio.app.di`
 
@@ -25,18 +26,19 @@ Layers:
 - Composables are stateless where possible
 
 ## Data strategy
-- Room is the local source of truth
-- DataStore stores lightweight preferences
-- Repository coordinates local + remote data
+- Repositories coordinate remote APIs and local caches
+- DataStore currently stores lightweight persisted user state (profile/status/token-adjacent state)
+- Room is available as a dependency and remains planned for richer offline history/reconciliation use cases
 
 ## Network strategy
 - Retrofit + OkHttp + Kotlinx Serialization
+- Auth interceptor injects bearer tokens for protected APIs
 - DTO -> entity/domain mapping in data layer
-- WorkManager for background sync/retries
+- WorkManager is used for status expiry today and is the base for broader sync/retry workflows
 
 ## Testing approach
 - Unit tests for domain and ViewModels
-- Integration tests for repositories and DAOs
+- Integration tests for repositories and persistence adapters
 - Compose UI tests for critical flows
 
 ## Future scaling

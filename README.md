@@ -14,14 +14,18 @@ Nimio gives people a lightweight way to communicate their current moment.
 
 - Kotlin + Jetpack Compose Android app
 - App shell with top-level navigation (`Status`, `Social`, `Account`)
-- Local status system using DataStore
+- Hilt dependency injection with feature repositories
+- Retrofit + OkHttp networking against Nimio backend APIs
+- Local profile/status persistence using DataStore
 - Feature-first package layout aligned with Clean Architecture + MVVM
-- Scaffolds for account, sync, and social graph layers
+- Implemented account, status, and social graph feature flows
 
-## Implementation status (2026-07-23)
+## Implementation status (2026-08-03)
 
 - Status expiry is fully implemented: UI, domain, persistence, worker execution, and scheduling are all wired and tested.
-- Connection workflows and backend sync are still in design/roadmap stage.
+- Auth flows are wired to backend: register, login, Google sign-in, and email verification.
+- Social graph and status repositories are wired to remote APIs with local state updates.
+- Session-driven startup refresh is implemented for status and connection data.
 
 ## Project structure
 
@@ -48,10 +52,11 @@ cd /Users/lakky/Documents/GitHub/Nimio
 ## Next milestones
 
 1. ~~Complete local expiry execution (worker implementation + scheduling).~~ ✅ Done
-2. Add Hilt wiring and replace manual dependency construction.
-3. Introduce remote API contracts and sync workers for profile/social/status.
-4. Build social graph workflows (invites, circles, visibility rules).
-5. Introduce Room-backed status history and reconciliation.
+2. ~~Add Hilt wiring and replace manual dependency construction.~~ ✅ Done
+3. ~~Introduce remote API contracts for profile/social/status.~~ ✅ Done
+4. Harden background sync strategy (periodic refresh, retry semantics, push-triggered sync).
+5. Expand social graph UX and policy controls (invite ergonomics, circles, visibility management).
+6. Introduce Room-backed history/reconciliation where longer-lived local storage is needed.
 
 ## Product and backend draft
 
